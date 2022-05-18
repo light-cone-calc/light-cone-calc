@@ -94,34 +94,23 @@ function Calculate(input) {
     s_lo = 0.01;
   }
 
-  var a_s = 1 / s_hi;
-  var a_e = 1 / s_lo;
   // end input processing =====================================>>
 
   // << ================================= start ouput initialzation
 
   // >>>>>> output variables
   var a = 0;
-  var Ta = 0; // time age
-  var Tl = 0; // time lookback
   var T = 0; // Time since start
   var Dc = 0; // comoving distance at time t
-  var Dp = 0; // proper distance at time t
   var Dtc = 0; // comoving distance now
-  var Dte = 0; // comoving distance at end
-  var Dtp = 0; // proper distance now    var Hp = 0; // time variable Hubble constant
   var Y = 0; // Hubble time
 
   // >>>>>> auxiliary
   var N = 10000000; // Number of fine grain steps
   var pa = 1 / N; // pre-loop 'a' step size
   var da = 100 / N; // fine grain 'a' step size
-  var counter = 0; // used in trigger for outputs displays
   var a_ic = 1 / N;
-  var a_ie = N;
   var s = s_hi;
-  var si = s;
-  var ai = a;
   var sf = 0.000001; // fine grain steps
   var qa = 0;
   var Tage = 0;
@@ -129,12 +118,10 @@ function Calculate(input) {
   var Dthen = 0;
   var Dhor = 0;
   var Dpar = 0;
-  var Dlum = 0;
   var XDpar = 0;
   var Vnow = 0;
   var Vthen = 0;
   var s_display = s_hi;
-  var nn = s_hi;
   var first = 1;
   var rhoConst = 1.7885e9; // 3/(8 pi G)
   var secInGy = 3.1536e16; // seconds in Gy
@@ -166,7 +153,6 @@ function Calculate(input) {
     Dc = Dc + (1 / (Ho * a * qa)) * pa; // proper radius of obs univ as f(a). Dc = 1/Ho Int_0^1 {pa/(a*a*H)}
     a_ic = a_ic + pa; // new a
   }
-  Dte = Dc; // store for later use
   //----------------------------------------
 
   //=================================================================================
@@ -174,14 +160,11 @@ function Calculate(input) {
   //<===== Start of main ouput loop from s = earliest possible to latest required
   a_ic = 1 / N;
   Dc = 0;
-  Dp = 0; // Reset accumulators
 
   while (s >= 0.9999 * s_lo) {
     a = a_ic;
     s = 1 / a;
     let z = s - 1;
-    si = s;
-    ai = a; // equivalents
 
     qa = Math.sqrt(Om / a + Ok + Or / (a * a) + Ol * a * a); // time varying density function: Omega (a) =  a * H
     T = T + da / qa / Ho; // time (age)  T = 1/Ho int da/(a * H)
@@ -235,7 +218,6 @@ function Calculate(input) {
       const rhom = rhomNow * s * s * s;
       const rhorNow = rhomNow / s_eq;
       const rhor = rhorNow * s * s * s * s;
-      const rhoT = rhol + rhom + rhor; //  this is total rho at time T
       const rhocrit = rhoConst * (H_t / secInGy) * (H_t / secInGy); // critical density at time T
 
       const OmegaMatterT = rhom / rhocrit;
@@ -282,7 +264,6 @@ function Calculate(input) {
     }
     a_ic = a_ic + da; // new a
   } // end of main ouput loop ==================>
-  Dte = Dc;
 
   return resultList;
 } // ==========================> end of Function Calculate
@@ -310,7 +291,6 @@ function CalculateTage(input) {
   var N = 10000000; // Number of fine grain steps
   var pa = 1 / N; // pre-loop 'a' step size
   var a_ic = 1 / N;
-  var a_ie = N;
   var sf = 0.00001;
   var qa = 0;
 
