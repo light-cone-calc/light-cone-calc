@@ -13,7 +13,7 @@
 ### v1.0.0-dev - development
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/light-cone-calc@1.0.0-dev"></script>
+<script src="https://cdn.jsdelivr.net/npm/light-cone-calc@develop"></script>
 ```
 
 ### v0.2.x - legacy
