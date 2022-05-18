@@ -1,0 +1,10 @@
+# .gitignore
+
+# Dependency directories.
+/node_modules/
+
+# Distribution files.
+/dist/
+
+# No lockfile for a module.
+/package-lock.json

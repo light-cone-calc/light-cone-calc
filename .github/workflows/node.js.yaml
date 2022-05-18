@@ -1,0 +1,41 @@
+# .github/workflows/node.js.yaml
+
+# This workflow will do a clean install of node dependencies, build the source
+# code and run tests across different versions of node on ubuntu, macos and
+# windows.
+# https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runs-on }}
+
+    strategy:
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          # Intermittent failure when macos enabled ?!
+          # - macos-latest
+          - windows-latest
+
+        node-version:
+          # See https://nodejs.org/en/about/releases/.
+          - 14.x # Until 2023-04-30
+          - 16.x # Until 2024-04-30
+          - 18.x # Until 2025-04-30
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.runs-on }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm run ci
