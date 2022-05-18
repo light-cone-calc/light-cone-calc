@@ -2,6 +2,3 @@
 
 # Distribution bundles.
 dist
-
-# Legacy code.
-src/calculation.js
