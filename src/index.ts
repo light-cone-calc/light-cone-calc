@@ -1,3 +1,3 @@
 export * from './calculation';
 
-export const version = '1.1.0-dev.001';
+export const version = '1.1.0';

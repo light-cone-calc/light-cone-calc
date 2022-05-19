@@ -1,6 +1,6 @@
 {
   "name": "light-cone-calc",
-  "version": "1.1.0-dev.001",
+  "version": "1.1.0",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
     "dist"
