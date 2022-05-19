@@ -5,6 +5,7 @@
 ### Added
 
 - Republished v1.0.0 to start development branch.
+- fix: produce the requested number of steps instead of 1 more.
 
 ## `1.0.0` stable _2022-05-18_
 

@@ -1,3 +1,7 @@
+/**
+ * This is the legacy code: it can be moved to test later.
+ */
+
 function Calculate(input) {
   var resultList = [];
 
