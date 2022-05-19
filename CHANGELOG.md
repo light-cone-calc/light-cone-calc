@@ -1,16 +1,12 @@
 # LightConeCalc change log
 
-## `1.0.0-dev` development
+## `1.x.x-dev` development
+
+## `1.1.0` stable _2022-05-19_
 
 ### Added
 
-- Republished v1.0.0 to start development branch.
-
-## `1.0.0` stable _2022-05-18_
-
-### Added
-
-- Republished v0.2.2 to start stable branch.
+- feature: improved stretch range calculations (not yet used for integration).
 
 ## `0.2.2` legacy _2022-05-18_
 
