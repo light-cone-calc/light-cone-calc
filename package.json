@@ -1,6 +1,6 @@
 {
   "name": "light-cone-calc",
-  "version": "1.1.0",
+  "version": "1.2.0-dev.1",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
     "dist"
@@ -8,12 +8,12 @@
   "browser": "dist/light-cone-calc.min.js",
   "scripts": {
     "build": "rimraf dist && rollup -c && npm run test:dist",
-    "ci": "npm run lint && npm run test:func && npm run build",
+    "ci": "npm run lint && npm run test:unit && npm run build",
     "lint": "prettier . --check && eslint .",
     "lint:fix": "prettier . --write && eslint . --fix",
-    "test": "npm run lint:fix && npm run test:func",
+    "test": "npm run lint:fix && npm run test:unit",
     "test:dist": "cross-env TS_NODE_COMPILER_OPTIONS=\"{ \\\"module\\\": \\\"commonjs\\\" }\" mocha -r ts-node/register test/dist/**/*.ts",
-    "test:func": "cross-env TS_NODE_COMPILER_OPTIONS=\"{ \\\"module\\\": \\\"commonjs\\\" }\" mocha -r ts-node/register test/func/**/*.ts"
+    "test:unit": "cross-env TS_NODE_COMPILER_OPTIONS=\"{ \\\"module\\\": \\\"commonjs\\\" }\" mocha -r ts-node/register test/unit/**/*.ts"
   },
   "repository": {
     "type": "git",

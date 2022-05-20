@@ -1,4 +1,3 @@
-
 import { expect } from 'chai';
 
 import { readFileSync } from 'fs';
@@ -10,10 +9,18 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 const iife = readFileSync(pkg.browser, 'utf8');
 
-const { version } = eval(`(() => {${iife}; return ${moduleName}})()`);
+const LightConeCalc = eval(`(() => {${iife}; return ${moduleName}})()`);
 
 describe('The browser distribution', function () {
   it('should have the same version as package.json', function () {
-    expect(version).to.equal(pkg.version);
+    expect(LightConeCalc.version).to.equal(pkg.version);
+  });
+
+  it('should expose the new and legacy APIs', function () {
+    const api = ['getStretchValues', 'version'];
+    const legacyApi = ['Calculate', 'CalculateTage', 'ScaleResults'];
+    expect(Object.keys(LightConeCalc).sort()).to.eql(
+      [...api, ...legacyApi].sort()
+    );
   });
 });
