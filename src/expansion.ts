@@ -83,13 +83,13 @@ const getDensityFunctionCalculator = () => {
   const OmegaR = OmegaM / s_eq; // Energy density of radiation
   const OmegaK = 1 - OmegaM - OmegaR - OmegaL; // Curvature energy density
 
-  return (s: number): [a: number, b: number] => {
+  return (s: number): number => {
     const s2 = s * s;
     // Calculate the reciprocal of the time-dependent density.
     const H =
       H0conv *
       Math.sqrt(OmegaL + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2);
-    return [1 / H, 1 / (H * s)];
+    return 1 / H;
   };
 };
 
@@ -119,7 +119,8 @@ const calculateExpansionForStretchValues = (
 
   // Calculate density values at midpoint (use rectangle rule for first step to
   // avoid dicontinuity at s = 0).
-  const [TH, THs] = getDensity(s + deltaS / 2);
+  const TH = getDensity(s + deltaS / 2);
+  const THs = TH / (s + deltaS / 2);
 
   s += deltaS;
   integralTH += deltaS * TH;
@@ -127,7 +128,8 @@ const calculateExpansionForStretchValues = (
   ++stepCount;
 
   // Integrate up through the values (which are in descending order).
-  let [lastTH, lastTHs] = getDensity(s);
+  let lastTH = getDensity(s);
+  let lastTHs = lastTH / s;
   let state = 'BELOW_ONE';
   let stretchValuesIndex = stretchValues.length - 1;
   let nextValue = 0;
@@ -160,7 +162,8 @@ const calculateExpansionForStretchValues = (
       deltaS = Math.min(deltaS * 1.0001, nextValue - s);
 
       // Trapezium rule step
-      const [nextTH, nextTHs] = getDensity(s + deltaS);
+      const nextTH = getDensity(s + deltaS);
+      const nextTHs = lastTH / (s + deltaS);
       s += deltaS;
       integralTH += deltaS * ((lastTH + nextTH) / 2);
       integralTHs += deltaS * ((lastTHs + nextTHs) / 2);
