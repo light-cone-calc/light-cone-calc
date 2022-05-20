@@ -2,26 +2,16 @@
  * Calculate expansion results.
  */
 
-type ExpansionInputs = {
-  Ynow?: number;
-  Yinf?: number;
-  s_eq?: number;
-  Omega?: number;
-  s_lower?: number;
-  s_upper?: number;
-  s_step?: number;
-  exponential?: boolean | 0 | 1;
+import { getStretchValues } from './stretch-range';
+
+export type ExpansionInputs = {
+  stretch: [upper: number, lower: number] | number[];
+  steps?: number;
 };
 
 type SanitizedExpansionInputs = {
-  Ynow: number;
-  Yinf: number;
-  s_eq: number;
-  Omega: number;
-  s_lower: number;
-  s_upper: number;
-  s_step: number;
-  exponential: boolean;
+  stretch: [upper: number, lower: number] | number[];
+  steps?: number;
 };
 
 type IntegrationResult = {
@@ -78,16 +68,7 @@ const planckModel = {
 const getSanitizedInputs = (
   inputs: ExpansionInputs
 ): SanitizedExpansionInputs => {
-  return {
-    Ynow: inputs.Ynow ?? 0,
-    Yinf: inputs.Yinf ?? 0,
-    s_eq: inputs.s_eq ?? 0,
-    Omega: inputs.Omega ?? 0,
-    s_lower: inputs.s_lower ?? 0,
-    s_upper: inputs.s_upper ?? 0,
-    s_step: inputs.s_step ?? 0,
-    exponential: inputs.exponential ? true : false,
-  };
+  return inputs;
 };
 
 const getDensityFunctionCalculator = () => {
@@ -220,62 +201,16 @@ const calculateExpansionForStretchValues = (
  * @returns
  */
 const calculateExpansion = (inputs: ExpansionInputs): IntegrationResult[] => {
+  // Sanitize the inputs to avoid complications later.
   const sanitized = getSanitizedInputs(inputs);
 
-  const { s_upper, s_lower, s_step } = sanitized;
-  const stretchValues = getStretchValues(s_upper, s_lower, s_step);
+  const stretchValues = getStretchValues(sanitized);
 
   const results = calculateExpansionForStretchValues(stretchValues, sanitized);
 
   return results;
 };
 
-const addStretchValues = (
-  steps: number[],
-  upper: number,
-  lower: number,
-  count: number
-) => {
-  const factor = (lower / upper) ** (1 / count);
-  let current = upper;
-  for (let i = 0; i < count - 1; ++i) {
-    current *= factor;
-    steps.push(current);
-  }
-  steps.push(lower);
-
-  return steps;
-};
-
-/**
- * Get a list of output values for stretch factor s (i.e. 1 + redshift (z)).
- *
- * @todo Implement linear steps (currently only exponential).
- * @todo Deal with negative step values.
- * @param inputs Sanitized inputs.
- * @returns Sanitized inputs.
- */
-const getStretchValues = (
-  upper: number,
-  lower: number,
-  count: number
-): number[] => {
-  const steps = [upper];
-  if (lower > 1 || upper < 1) {
-    // Even steps all the way down.
-    addStretchValues(steps, upper, lower, count);
-    return steps;
-  }
-
-  const factor = (lower / upper) ** (1 / count);
-  const countLower = Math.ceil(Math.log(lower) / Math.log(factor));
-  // From upper down to 1.
-  addStretchValues(steps, upper, 1, count - countLower);
-  // From 1 down to lower.
-  addStretchValues(steps, 1, lower, countLower);
-  return steps;
-};
-
 const convertResultUnits = () => ({});
 
-export { calculateExpansion, convertResultUnits, getStretchValues };
+export { calculateExpansion, convertResultUnits };

@@ -1,42 +1,31 @@
 import { expect } from 'chai';
-import { getStretchValues, calculateExpansion } from '../../src/expansion';
 
-const steps = getStretchValues(1090 + 1, 0.01, 10);
-describe('src/expansion.ts', function () {
-  describe('Step calculations', function () {
-    it('should calculate steps for the default inputs', function () {
-      expect(steps).to.eql([
-        1091, 340.0326542332193, 105.97819060026406, 33.0302891298275,
-        10.294570928419706, 3.2085153776193307, 1, 0.31622776601683794, 0.1,
-        0.0316227766016838, 0.01,
-      ]);
+import { calculateExpansion } from '../../src/expansion';
+
+describe('Expansion calculations', function () {
+  it('should calculate expansion for the default inputs', function () {
+    const results = calculateExpansion({
+      stretch: [1091, 0.01],
+      steps: 10,
     });
 
-    it('should calculate the right number of steps', function () {
-      expect(steps.length).to.equal(11);
-    });
-
-    it('should calculate redshift 0 exactly', function () {
-      expect(steps[6] - 1).to.equal(0);
-    });
-
-    it('should calculate steps above 1', function () {
-      const steps = getStretchValues(256, 2, 7);
-      expect(steps).to.eql([256, 128, 64, 32, 16, 8, 4, 2]);
-    });
+    // console.log(results);
+    // expect(results[0]).to.eql({ s: 0, stepCount: 1 });
+    // expect(results[11]).to.eql({ s: 0, stepCount: 1 });
   });
 
-  describe('Expansion calculations', function () {
-    it('should calculate expansion for the default inputs', function () {
-      const results = calculateExpansion({
-        s_upper: 1.1,
-        s_lower: 0.9,
-        s_step: 20,
-      });
-
-      console.log(results);
-      // expect(results[0]).to.eql({ s: 0, stepCount: 1 });
-      // expect(results[11]).to.eql({ s: 0, stepCount: 1 });
+  it('should calculate expansion for values close to s = 1', function () {
+    const results = calculateExpansion({
+      stretch: [
+        1.1, 1.09, 1.08, 1.07, 1.06, 1.05, 1.04, 1.03, 1.02, 1.01, 1, 0.99,
+        0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92, 0.91, 0.9,
+      ],
+      // stretch: [1.1, 0.9],
+      // steps: 20,
     });
+
+    console.log(results);
+    // expect(results[0]).to.eql({ s: 0, stepCount: 1 });
+    // expect(results[11]).to.eql({ s: 0, stepCount: 1 });
   });
 });
