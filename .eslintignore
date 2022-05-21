@@ -1,4 +1,4 @@
 # .eslintignore
 
 # Distribution bundles.
-dist
+/dist/

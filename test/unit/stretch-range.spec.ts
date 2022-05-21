@@ -1,9 +1,10 @@
 import { expect } from 'chai';
-import { getStretchValues } from '../../src/expansion';
 
-const steps = getStretchValues(1090 + 1, 0.01, 10);
+import { getStretchValues } from '../../src/stretch-range';
 
-describe('Expansion calculations', function () {
+const steps = getStretchValues({ stretch: [1090 + 1, 0.01], steps: 10 });
+
+describe('Step range calculations', function () {
   it('should calculate steps for the default inputs', function () {
     expect(steps).to.eql([
       1091, 340.0326542332193, 105.97819060026406, 33.0302891298275,
@@ -21,7 +22,7 @@ describe('Expansion calculations', function () {
   });
 
   it('should calculate steps above 1', function () {
-    const steps = getStretchValues(256, 2, 7);
+    const steps = getStretchValues({ stretch: [256, 2], steps: 7 });
     expect(steps).to.eql([256, 128, 64, 32, 16, 8, 4, 2]);
   });
 });

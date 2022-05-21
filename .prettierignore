@@ -1,4 +1,4 @@
 # .prettierignore
 
 # Distribution bundles.
-dist
+/dist/
