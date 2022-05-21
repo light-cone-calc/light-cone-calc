@@ -32,7 +32,7 @@ const stretch = [
   0.010000000000000012,
 ];
 
-describe('Expansion calculations', function () {
+describe.skip('Performance vs legacy calculations', function () {
   it('should calculate expansion for the default inputs', function () {
     const legacyResults = Calculate(getLegacyInputs());
 
@@ -40,6 +40,31 @@ describe('Expansion calculations', function () {
       stretch,
     });
 
+    const tolerances = {
+      Dpar: 1e-1,
+      Vnow: 1e-2,
+      z: 1e-2,
+      default: 1e-3,
+    };
+
+    for (let i = 0; i < legacyResults.length; ++i) {
+      Object.entries(legacyResults[i]).forEach(([key, value]) => {
+        if (key === 'z') {
+          console.log(value, results[i].z);
+        }
+        if (value === 0) return;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const tolerance = tolerances[key] ?? tolerances.default;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        expect(results[i][key] / value).to.be.closeTo(
+          1,
+          tolerance,
+          `${results[i].s}: ${key}`
+        );
+      });
+    }
     console.log(legacyResults[0]);
     console.log(results[0]);
   });

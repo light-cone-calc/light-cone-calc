@@ -3,13 +3,14 @@
  */
 
 import { getStretchValues } from './stretch-range';
+import { getModel } from './model';
 
 export type ExpansionInputs = {
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
 };
 
-type SanitizedExpansionInputs = {
+export type SanitizedExpansionInputs = {
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
 };
@@ -44,20 +45,6 @@ type ExpansionResult = {
   OmegaTotalT: number;
 };
 
-const physicalConstants = {
-  rhoConst: 1.7885e9, // 3 / (8 pi G)
-  secInGy: 3.1536e16, // s / Gyr
-  tempNow: 2.725, // CMB temperature now
-  Hconv: 1 / 978, // Convert km/s/Mpc -> Gyr^-1
-};
-
-const planckModel = {
-  H0: 67.74, // H0 control
-  OmegaL: 0.691, // OmegaL control
-  Omega: 1, // Omega control
-  s_eq: 1 + 3370, // Stretch when OmegaM=OmegaR
-};
-
 /**
  * Sanitize raw inputs to `getExpansionResults()`.
  *
@@ -68,28 +55,6 @@ const getSanitizedInputs = (
   inputs: ExpansionInputs
 ): SanitizedExpansionInputs => {
   return inputs;
-};
-
-const getDensityFunctionCalculator = () => {
-  // Constants derived from inputs
-  const { H0, Hconv, Omega, OmegaL, rhoConst, secInGy, s_eq } = {
-    ...planckModel,
-    ...physicalConstants,
-  };
-  const H0conv = H0 * Hconv; // H0 in Gyr^-1
-  const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
-  const OmegaM = ((Omega - OmegaL) * s_eq) / (s_eq + 1); // Energy density of matter
-  const OmegaR = OmegaM / s_eq; // Energy density of radiation
-  const OmegaK = 1 - OmegaM - OmegaR - OmegaL; // Curvature energy density
-
-  return (s: number): number => {
-    const s2 = s * s;
-    // Calculate the reciprocal of the time-dependent density.
-    const H =
-      H0conv *
-      Math.sqrt(OmegaL + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2);
-    return 1 / H;
-  };
 };
 
 /**
@@ -126,7 +91,7 @@ const calculateExpansionForStretchValues = (
   points.push(Infinity);
 
   // Get a calculator for density using any provided overrides.
-  const getDensity = getDensityFunctionCalculator();
+  const { TH } = getModel(inputs);
 
   // Create an array to build the return values.
   const results: IntegrationResult[] = [];
@@ -140,7 +105,7 @@ const calculateExpansionForStretchValues = (
 
   // Integrate up, storing values at each data point.
   isBelowOne = true;
-  let lastTH = getDensity(s);
+  let lastTH = TH(s);
   let lastTHs = lastTH / s;
 
   for (let i = 0; i < points.length; ++i) {
@@ -152,7 +117,7 @@ const calculateExpansionForStretchValues = (
         // Calculate step length avoiding overshoot.
         deltaS = Math.min(deltaS * 1.001, nextValue - s);
 
-        const nextTH = getDensity(s + deltaS);
+        const nextTH = TH(s + deltaS);
         s += deltaS;
         sumTh0 += deltaS * ((lastTH + nextTH) / 2);
         lastTH = nextTH;
@@ -167,7 +132,7 @@ const calculateExpansionForStretchValues = (
         // Trapezium rule step.
         // Calculate step length avoiding overshoot.
         deltaS = Math.min(deltaS * 1.001, nextValue - s);
-        const nextTH = getDensity(s + deltaS);
+        const nextTH = TH(s + deltaS);
         const nextTHs = nextTH / (s + deltaS);
         s += deltaS;
         sumTh0 += deltaS * ((lastTH + nextTH) / 2);
@@ -186,7 +151,7 @@ const calculateExpansionForStretchValues = (
         } else {
           deltaS = deltaS * 1.1;
         }
-        const nextTH = getDensity(s + deltaS);
+        const nextTH = TH(s + deltaS);
         const nextTHs = nextTH / (s + deltaS);
         if (isNaN(nextTHs)) break;
         s += deltaS;
@@ -208,62 +173,6 @@ const calculateExpansionForStretchValues = (
   }
 
   return results;
-};
-
-const getModel = (inputs: SanitizedExpansionInputs) => {
-  // Constants derived from inputs
-  const { H0, Hconv, Omega, OmegaL, rhoConst, secInGy, s_eq, tempNow } = {
-    ...planckModel,
-    ...physicalConstants,
-  };
-
-  // Hubble constant at ?
-  const H_0 = 67.74;
-
-  const H0conv = H_0 * Hconv; // H0 in Gyr^-1
-  const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
-  const OmegaM = ((Omega - OmegaL) * s_eq) / (s_eq + 1); // Energy density of matter
-  const OmegaR = OmegaM / s_eq; // Energy density of radiation
-  const OmegaK = 1 - OmegaM - OmegaR - OmegaL; // Curvature energy density
-
-  /**
-   * Hubble constant as a function of stretch.
-   *
-   * @param s stretch = 1/a, where a is the usual FLRW scale factor.
-   * @returns The Hubble constant at stretch s.
-   */
-  const H = (s: number) => {
-    const s2 = s * s;
-    return (
-      1 /
-      (H0conv *
-        Math.sqrt(OmegaL + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2))
-    );
-  };
-
-  const getParamsAtStretch = (s: number) => {
-    const H_t = H(s);
-    const s2 = s * s;
-    const hFactor = (H_0 / H_t) ** 2;
-    const OmegaMatterT = (Omega - OmegaL) * s2 * s * hFactor;
-    const OmegaLambdaT = OmegaL * hFactor;
-    const OmegaRadiationT = (OmegaMatterT * s) / s_eq;
-    return {
-      H_t,
-      OmegaMatterT,
-      OmegaLambdaT,
-      OmegaRadiationT,
-      TemperatureT: tempNow * s,
-      rhocrit: rhoConst * (H_t / secInGy) ** 2,
-      OmegaTotalT: OmegaMatterT + OmegaLambdaT + OmegaRadiationT,
-    };
-  };
-
-  return {
-    H_0,
-    H,
-    getParamsAtStretch,
-  };
 };
 
 const createExpansionResults = (
@@ -298,10 +207,6 @@ const createExpansionResults = (
     if (integrationResults[i].s === stretchValues[stretchValuesIndex]) {
       const { s, sumTh0, sumThs1 } = integrationResults[i];
 
-      // Current radius = ## \integral_0^s TH(s) ##.
-      const Dnow = Math.abs(sumTh0 - sumThAt1);
-      const Dthen = Dnow / s;
-
       const params = model.getParamsAtStretch(s);
       const {
         H_t,
@@ -313,20 +218,26 @@ const createExpansionResults = (
         OmegaTotalT,
       } = params;
 
+      // Current radius = ## \integral_0^s TH(s) ##.
+      const Dnow = Math.abs(sumTh0 - sumThAt1);
+      const Dthen = Dnow / s;
+      const a = 1 / s;
+      const Y = 1 / H_t;
+
       results.push({
         s, // Stretch.
-        a: 1 / s,
+        a,
         z: s - 1, // Redshift.
-        Vnow: Dnow * model.H_0,
+        Vnow: Dnow * model.H0conv,
         Vthen: Dthen * H_t,
         Tnow: sumThs1ToInfinity - sumThs1,
-        // Y: number;
-        Y: 99999999,
+        Y,
         Dnow,
         Dthen,
+        // Dhor: Y, // sumTh0 / s,
+        //@TODO or should it be this per Ibix?
         Dhor: sumTh0 / s,
-        // XDpar: number;
-        XDpar: 999999,
+        XDpar: (a * H_t) / model.H0conv,
         Dpar: (sumTh0ToInfinity - sumTh0) / s,
         H_t,
         OmegaMatterT,

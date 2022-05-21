@@ -19,7 +19,7 @@ describe('Expansion calculations', function () {
     expect(result.a).to.equal(1 / 1091);
     expect(result.s).to.equal(1091);
     // expect(result.Tnow).to.equal(3.719732675590e-04);
-    expect(result.Dnow / 45.35442113146).to.be.closeTo(1, 1e-6);
+    expect(result.Dnow / 45.35442113146).to.be.closeTo(1, 1e-5);
     expect(result.Dthen / 4.157145985602e-2).to.be.closeTo(1, 1e-6);
     expect(result.Dhor / 5.673735574007e-2).to.be.closeTo(1, 1e-6);
     expect(result.Tnow / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
