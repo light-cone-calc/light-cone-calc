@@ -17,8 +17,9 @@ describe('The browser distribution', function () {
   });
 
   it('should expose the new and legacy APIs', function () {
-    const api = ['getStretchValues', 'version'];
+    const api = ['calculateExpansion', 'version'];
     const legacyApi = ['Calculate', 'CalculateTage', 'ScaleResults'];
+
     expect(Object.keys(LightConeCalc).sort()).to.eql(
       [...api, ...legacyApi].sort()
     );

@@ -18,16 +18,11 @@ describe('Expansion calculations', function () {
     expect(result.z).to.equal(1090);
     expect(result.a).to.equal(1 / 1091);
     expect(result.s).to.equal(1091);
-    // expect(result.Tnow).to.equal(3.719732675590e-04);
+
     expect(result.Dnow / 45.35442113146).to.be.closeTo(1, 1e-5);
     expect(result.Dthen / 4.157145985602e-2).to.be.closeTo(1, 1e-6);
     expect(result.Dhor / 5.673735574007e-2).to.be.closeTo(1, 1e-6);
     expect(result.Tnow / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
-
-    /*
-    R Gly,Dpar Gly,Vgen/c,Vnow/c,Vthen/c,H(z),Temp (K),rho kg/m3,OmegaM,OmegaL,OmegaR,OmegaT
-    6.265517428441e-04,8.384887831152e-04,2.112089743468e+01,3.141419721314e+00,6.634960373315e+01,1.560924554388e+06,2.972972275000e+03,4.581016392767e-18,7.557150944256e-01,1.301381435600e-09,2.445815521516e-01,1.000296647879e+00
-    */
   });
 
   it('should calculate expansion for values close to s = 1', function () {
@@ -40,7 +35,19 @@ describe('Expansion calculations', function () {
       // steps: 20,
     });
 
-    // expect(results[0]).to.eql({ s: 0, stepCount: 1 });
-    // expect(results[11]).to.eql({ s: 0, stepCount: 1 });
+    // Values taken from
+    // https://www.physicsforums.com/threads/a-glitch-in-jorries-cosmo-calculator.1014779/post-6632672
+    expect(results[0].Dnow / 1.41004).to.be.closeTo(1, 1e-3);
+    expect(results[1].Dnow / 1.27214).to.be.closeTo(1, 1e-3);
+    expect(results[2].Dnow / 1.13354).to.be.closeTo(1, 1e-3);
+    expect(results[3].Dnow / 0.99426).to.be.closeTo(1, 1e-3);
+    expect(results[4].Dnow / 0.85427).to.be.closeTo(1, 1e-3);
+    expect(results[5].Dnow / 0.7136).to.be.closeTo(1, 1e-3);
+    expect(results[6].Dnow / 0.57225).to.be.closeTo(1, 1e-3);
+    expect(results[7].Dnow / 0.43023).to.be.closeTo(1, 1e-3);
+    expect(results[8].Dnow / 0.28748).to.be.closeTo(1, 1e-3);
+    expect(results[9].Dnow / 0.14408).to.be.closeTo(1, 1e-3);
+
+    expect(results[20].Dnow / 1.47679).to.be.closeTo(1, 1e-3);
   });
 });
