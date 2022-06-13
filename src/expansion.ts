@@ -5,15 +5,17 @@
 import { getStretchValues } from './stretch-range';
 import { getModel } from './model';
 
-export type ExpansionInputs = {
+export interface ExpansionInputs {
+  Ynow?: number;
+  Yinf?: number;
+  s_eq?: number;
+  Omega?: number;
+  OmegaL?: number;
+  H_0?: number;
+  exponential?: boolean;
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
-};
-
-export type SanitizedExpansionInputs = {
-  stretch: [upper: number, lower: number] | number[];
-  steps?: number;
-};
+}
 
 type IntegrationResult = {
   s: number;
@@ -43,18 +45,6 @@ type ExpansionResult = {
   TemperatureT: number;
   rhocrit: number;
   OmegaTotalT: number;
-};
-
-/**
- * Sanitize raw inputs to `getExpansionResults()`.
- *
- * @param inputs Raw inputs.
- * @returns Sanitized inputs.
- */
-const getSanitizedInputs = (
-  inputs: ExpansionInputs
-): SanitizedExpansionInputs => {
-  return inputs;
 };
 
 /**
@@ -178,17 +168,16 @@ const calculateExpansionForStretchValues = (
 const createExpansionResults = (
   stretchValues: number[],
   integrationResults: IntegrationResult[],
-  inputs: SanitizedExpansionInputs
+  inputs: ExpansionInputs
 ): ExpansionResult[] => {
   const model = getModel(inputs);
 
   let sumThAt1 = 0;
-  let sumThsAt1 = 0;
 
   // Extract the results at s = 1.
   for (let i = 0; i < integrationResults.length; ++i) {
     if (integrationResults[i].s === 1) {
-      ({ sumTh0: sumThAt1, sumThs1: sumThsAt1 } = integrationResults[i]);
+      ({ sumTh0: sumThAt1 } = integrationResults[i]);
       break;
     }
   }
@@ -236,7 +225,7 @@ const createExpansionResults = (
         Dthen,
         // Dhor: Y, // sumTh0 / s,
         //@TODO or should it be this per Ibix?
-        Dhor: sumTh0 / s,
+        Dhor: Y, // Math.max(sumTh0 / s, Y),
         XDpar: (a * H_t) / model.H0conv,
         Dpar: (sumTh0ToInfinity - sumTh0) / s,
         H_t,
@@ -261,23 +250,20 @@ const createExpansionResults = (
  * @returns
  */
 const calculateExpansion = (inputs: ExpansionInputs): ExpansionResult[] => {
-  // Sanitize the inputs to avoid complications later.
-  const sanitized = getSanitizedInputs(inputs);
-
   // Calculate the values to calculate at.
-  const stretchValues = getStretchValues(sanitized);
+  const stretchValues = getStretchValues(inputs);
 
   // Do the integration.
   const integrationResults = calculateExpansionForStretchValues(
     stretchValues,
-    sanitized
+    inputs
   );
 
   // Create the tabulated results.
   const results = createExpansionResults(
     stretchValues,
     integrationResults,
-    sanitized
+    inputs
   );
 
   return results;

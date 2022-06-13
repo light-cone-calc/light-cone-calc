@@ -1,4 +1,4 @@
-import type { SanitizedExpansionInputs } from './expansion';
+import type { ExpansionInputs } from './expansion';
 
 const physicalConstants = {
   rhoConst: 1.7885e9, // 3 / (8 pi G)
@@ -14,15 +14,16 @@ const planckModel = {
   s_eq: 1 + 3370, // Stretch when OmegaM=OmegaR
 };
 
-export const getModel = (inputs: SanitizedExpansionInputs) => {
+export const getModel = (inputs: ExpansionInputs) => {
   // Constants derived from inputs
   const { H_0, Hconv, Omega, OmegaL, rhoConst, secInGy, s_eq, tempNow } = {
     ...planckModel,
     ...physicalConstants,
+    ...inputs,
   };
 
   const H0conv = H_0 * Hconv; // H0 in Gyr^-1
-  const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
+  // const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
 
   //@TODO check this - should it be s_eq + 1 as the original, or as below
   // from Ibix?
