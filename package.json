@@ -1,10 +1,11 @@
 {
   "name": "light-cone-calc",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
     "dist"
   ],
+  "type": "module",
   "browser": "dist/light-cone-calc.min.js",
   "scripts": {
     "build": "rimraf dist && rollup -c && npm run test:dist",
@@ -12,8 +13,8 @@
     "lint": "prettier . --check && eslint .",
     "lint:fix": "prettier . --write && eslint . --fix",
     "test": "npm run lint:fix && npm run test:unit",
-    "test:dist": "cross-env TS_NODE_COMPILER_OPTIONS=\"{ \\\"module\\\": \\\"commonjs\\\" }\" mocha -r ts-node/register test/dist/**/*.spec.ts",
-    "test:unit": "cross-env TS_NODE_COMPILER_OPTIONS=\"{ \\\"module\\\": \\\"commonjs\\\" }\" mocha -r ts-node/register test/unit/**/*.spec.ts"
+    "test:dist": "mocha test/dist/**/*.{spec,test}.{{c,m,}js,ts}",
+    "test:unit": "mocha test/unit/**/*.spec.{{c,m,}js,ts}"
   },
   "repository": {
     "type": "git",
@@ -37,9 +38,8 @@
     "@types/mocha": "^9.1.1",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
-    "camelcase": "^6.3.0",
+    "camelcase": "^7.0.0",
     "chai": "^4.3.6",
-    "cross-env": "^7.0.3",
     "eslint": "^8.15.0",
     "eslint-plugin-mocha": "^10.0.4",
     "mocha": "^10.0.0",

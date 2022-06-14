@@ -1,7 +1,11 @@
 // Legacy interface
 import type { ExpansionInputs } from './expansion';
 
-import { calculateExpansion, convertResultUnits } from './expansion';
+import {
+  calculateAge,
+  calculateExpansion,
+  convertResultUnits,
+} from './expansion';
 
 type LegacyExpansionInputs = {
   Ynow: number;
@@ -47,10 +51,12 @@ export const Calculate = (inputs: LegacyExpansionInputs) => {
   return calculateExpansion(converted);
 };
 
+// This uses a bit of a hack to calculate the current age of the universe:
+// the integration only needs to be done from s = 1 to infinity so s = 2 is
+// redundant.
 export const CalculateTage = (inputs: LegacyExpansionInputs) => {
-  return 0;
   const converted = convertLegacyInputs(inputs);
-  return calculateExpansion(converted);
+  return calculateAge(converted);
 };
 
 export const ScaleResults = convertResultUnits;

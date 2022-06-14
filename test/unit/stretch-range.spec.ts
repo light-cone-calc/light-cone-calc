@@ -2,7 +2,11 @@ import { expect } from 'chai';
 
 import { getStretchValues } from '../../src/stretch-range';
 
-const steps = getStretchValues({ stretch: [1090 + 1, 0.01], steps: 10 });
+const steps = getStretchValues({
+  stretch: [1090 + 1, 0.01],
+  steps: 10,
+  exponential: true,
+});
 
 describe('Step range calculations', function () {
   it('should calculate steps for the default inputs', function () {
@@ -21,8 +25,19 @@ describe('Step range calculations', function () {
     expect(steps[6] - 1).to.equal(0);
   });
 
-  it('should calculate steps above 1', function () {
-    const steps = getStretchValues({ stretch: [256, 2], steps: 7 });
-    expect(steps).to.eql([256, 128, 64, 32, 16, 8, 4, 2]);
+  it('should calculate exponential steps', function () {
+    const steps = getStretchValues({
+      stretch: [8, 0.25],
+      steps: 5,
+      exponential: true,
+    });
+    expect(steps).to.eql([8, 4, 2, 1, 0.5, 0.25]);
+  });
+
+  it('should calculate linear steps', function () {
+    const steps = getStretchValues({ stretch: [1.044, 0.964, 2], steps: 8 });
+    expect(steps).to.eql([
+      1.044, 1.033, 1.022, 1.0110000000000001, 1, 0.991, 0.982, 0.973, 0.964,
+    ]);
   });
 });

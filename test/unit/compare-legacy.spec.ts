@@ -1,7 +1,8 @@
 import { expect } from 'chai';
-import { Calculate } from '../legacy-calculation.js';
 
+import { CalculateTage } from '../../src/legacy.js';
 import { calculateExpansion } from '../../src/expansion';
+import * as legacy from '../legacy-calculation.js';
 
 const getLegacyInputs = () => {
   const H_0 = 67.74;
@@ -33,27 +34,26 @@ const stretch = [
 ];
 
 describe('Performance vs legacy calculations', function () {
+  it('should calculate Tage for the default inputs', function () {
+    const legacyTage = legacy.CalculateTage(getLegacyInputs());
+    const age = CalculateTage(getLegacyInputs());
+    expect(age).to.be.closeTo(legacyTage, 1e-4);
+  });
+
   it('should calculate expansion for the default inputs', function () {
-    const legacyResults = Calculate(getLegacyInputs());
+    const legacyResults = legacy.Calculate(getLegacyInputs());
 
     const results = calculateExpansion({
       stretch,
     });
 
     const tolerances = {
-      Dpar: 1e-1,
-      Vnow: 1e-2,
-      Vthen: 1e-2,
-      Tnow: 1e-2,
-      z: 1e-2,
-      default: 1e-3,
+      Dpar: 2e-2,
+      default: 1e-2,
     };
 
     for (let i = 0; i < legacyResults.length; ++i) {
       Object.entries(legacyResults[i]).forEach(([key, value]) => {
-        if (key === 'z') {
-          console.log(value, results[i].z);
-        }
         if (value === 0) return;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -69,7 +69,5 @@ describe('Performance vs legacy calculations', function () {
         );
       });
     }
-    console.log(legacyResults[0]);
-    console.log(results[0]);
   });
 });

@@ -22,11 +22,8 @@ const addLinearStretchValues = (
   lower: number,
   count: number
 ) => {
-  const step = (upper - lower) / count;
-  let current = upper;
-  for (let i = 0; i < count - 1; ++i) {
-    current -= step;
-    steps.push(current);
+  for (let i = 1; i < count; ++i) {
+    steps.push(upper - ((upper - lower) * i) / count);
   }
   steps.push(lower);
 

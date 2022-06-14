@@ -79,10 +79,16 @@ const calculateExpansionForStretchValues = (
   const options = { maxDepth: 16 };
 
   const thResults = integrate.quad(TH, sPoints, options);
+
   // Make sure we don't calculate THs at s = 0: discontinuity!
   const thsResults = integrate.quad(THs, sPoints.slice(1), options);
+  if (!thsResults[1].points) {
+    // Put in the initial value.
+    thsResults[1].points = [thsResults];
+  }
   // Put in the initial value.
   thsResults[1].points.unshift([0, {}]);
+
   const thAtOne = integrate.quad(TH, [0, 1], options)[0];
   const thAtInfinity = thResults[0];
   const thsAtInfinity = thsResults[0];
@@ -152,8 +158,9 @@ const createExpansionResults = (
       XDpar: (a * H_t) / model.H0GYr,
       Vnow: dNow * model.H0GYr,
       Vthen: Dthen * H_t,
-      // Do we need both H_t and Y?
-      H_t: H_t / model.convertToGyr,
+      // The legacy test says we don't want to convert.
+      // H_t: H_t / model.convertToGyr,
+      H_t,
       Y: 1 / H_t,
       TemperatureT,
       rhocrit,
@@ -168,6 +175,18 @@ const createExpansionResults = (
 };
 
 /**
+ * Calculate the current age of the universe.
+ *
+ * @param inputs Inputs.
+ * @returns
+ */
+const calculateAge = (inputs: ExpansionInputs): number => {
+  // Do the integration.
+  const { tNow } = calculateExpansionForStretchValues([1], inputs)[0];
+  return tNow;
+};
+
+/**
  * Get a list of cosmic expansion results.
  *
  * @param inputs Inputs.
@@ -175,7 +194,12 @@ const createExpansionResults = (
  */
 const calculateExpansion = (inputs: ExpansionInputs): ExpansionResult[] => {
   // Calculate the values to calculate at.
-  const stretchValues = getStretchValues(inputs);
+  const stretchValues =
+    inputs.stretch.length === 1
+      ? // Pass the single point to calculate at.
+        inputs.stretch
+      : // Calculate multiple points.
+        getStretchValues(inputs);
 
   // Do the integration.
   const integrationResults = calculateExpansionForStretchValues(
@@ -191,4 +215,4 @@ const calculateExpansion = (inputs: ExpansionInputs): ExpansionResult[] => {
 
 const convertResultUnits = () => ({});
 
-export { calculateExpansion, convertResultUnits };
+export { calculateAge, calculateExpansion, convertResultUnits };

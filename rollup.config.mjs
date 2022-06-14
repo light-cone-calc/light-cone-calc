@@ -1,9 +1,12 @@
 // rollup.config.js
+
+import { readFileSync } from 'fs';
+
 import camelCase from 'camelcase';
 import typescript from '@rollup/plugin-typescript';
 import { terser } from 'rollup-plugin-terser';
 
-import pkg from './package.json';
+const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 const input = 'src/index.ts';
 
