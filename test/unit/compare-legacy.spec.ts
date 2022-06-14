@@ -32,7 +32,7 @@ const stretch = [
   0.010000000000000012,
 ];
 
-describe.skip('Performance vs legacy calculations', function () {
+describe('Performance vs legacy calculations', function () {
   it('should calculate expansion for the default inputs', function () {
     const legacyResults = Calculate(getLegacyInputs());
 
@@ -43,6 +43,8 @@ describe.skip('Performance vs legacy calculations', function () {
     const tolerances = {
       Dpar: 1e-1,
       Vnow: 1e-2,
+      Vthen: 1e-2,
+      Tnow: 1e-2,
       z: 1e-2,
       default: 1e-3,
     };
@@ -61,7 +63,9 @@ describe.skip('Performance vs legacy calculations', function () {
         expect(results[i][key] / value).to.be.closeTo(
           1,
           tolerance,
-          `${results[i].s}: ${key}`
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          `Result ${i} (s = ${results[i].s}) ${key} Jorrie ${value} actual ${results[i][key]}:`
         );
       });
     }

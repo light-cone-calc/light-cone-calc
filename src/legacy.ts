@@ -4,14 +4,14 @@ import type { ExpansionInputs } from './expansion';
 import { calculateExpansion, convertResultUnits } from './expansion';
 
 type LegacyExpansionInputs = {
-  Ynow?: number;
-  Yinf?: number;
-  s_eq?: number;
-  Omega?: number;
-  s_lower?: number;
-  s_upper?: number;
-  s_step?: number;
-  exponential?: boolean | 0 | 1;
+  Ynow: number;
+  Yinf: number;
+  s_eq: number;
+  Omega: number;
+  s_lower: number;
+  s_upper: number;
+  s_step: number;
+  exponential: boolean | 0 | 1;
 };
 
 /**
@@ -23,18 +23,34 @@ type LegacyExpansionInputs = {
 const convertLegacyInputs = (
   inputs: LegacyExpansionInputs
 ): ExpansionInputs => {
+  const { Ynow, s_eq, Omega, s_lower, s_upper, s_step, exponential } = inputs;
+
+  const Yinf = Math.max(Ynow, inputs.Yinf);
+  const OmegaL = (Ynow / Yinf) * (Ynow / Yinf); // Lambda density parameter
+  const H0GYr = 1 / Ynow; // Hubble const now
+
   return {
-    // Ynow: inputs.Ynow ?? 0,
-    // Yinf: inputs.Yinf ?? 0,
-    // s_eq: inputs.s_eq ?? 0,
-    // Omega: inputs.Omega ?? 0,
-    stretch: [inputs.s_upper ?? 0, inputs.s_lower ?? 0],
-    steps: inputs.s_step ?? 0,
-    // exponential: inputs.exponential ? true : false,
+    Ynow,
+    Yinf,
+    s_eq,
+    Omega,
+    OmegaL,
+    H0GYr,
+    stretch: [s_upper, s_lower],
+    steps: s_step,
+    exponential: exponential ? true : false,
   };
 };
 
-export const Calculate = (inputs: LegacyExpansionInputs) =>
-  calculateExpansion(convertLegacyInputs(inputs));
-export const CalculateTage = calculateExpansion;
+export const Calculate = (inputs: LegacyExpansionInputs) => {
+  const converted = convertLegacyInputs(inputs);
+  return calculateExpansion(converted);
+};
+
+export const CalculateTage = (inputs: LegacyExpansionInputs) => {
+  return 0;
+  const converted = convertLegacyInputs(inputs);
+  return calculateExpansion(converted);
+};
+
 export const ScaleResults = convertResultUnits;
