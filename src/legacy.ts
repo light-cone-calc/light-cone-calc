@@ -27,7 +27,7 @@ const convertLegacyInputs = (
 
   const Yinf = Math.max(Ynow, inputs.Yinf);
   const OmegaL = (Ynow / Yinf) * (Ynow / Yinf); // Lambda density parameter
-  const H_0 = 1 / Ynow; // Hubble const now
+  const H0GYr = 1 / Ynow; // Hubble const now
 
   return {
     Ynow,
@@ -35,14 +35,22 @@ const convertLegacyInputs = (
     s_eq,
     Omega,
     OmegaL,
-    H_0,
+    H0GYr,
     stretch: [s_upper, s_lower],
     steps: s_step,
     exponential: exponential ? true : false,
   };
 };
 
-export const Calculate = (inputs: LegacyExpansionInputs) =>
-  calculateExpansion(convertLegacyInputs(inputs));
-export const CalculateTage = calculateExpansion;
+export const Calculate = (inputs: LegacyExpansionInputs) => {
+  const converted = convertLegacyInputs(inputs);
+  return calculateExpansion(converted);
+};
+
+export const CalculateTage = (inputs: LegacyExpansionInputs) => {
+  return 0;
+  const converted = convertLegacyInputs(inputs);
+  return calculateExpansion(converted);
+};
+
 export const ScaleResults = convertResultUnits;

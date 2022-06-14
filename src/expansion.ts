@@ -2,8 +2,11 @@
  * Calculate expansion results.
  */
 
-import { getStretchValues } from './stretch-range';
-import { getModel } from './model';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { integrate } from '@rec-math/math/esm/index.js';
+import { getStretchValues } from './stretch-range.js';
+import { getModel } from './model.js';
 
 export interface ExpansionInputs {
   Ynow?: number;
@@ -11,7 +14,7 @@ export interface ExpansionInputs {
   s_eq?: number;
   Omega?: number;
   OmegaL?: number;
-  H_0?: number;
+  H0GYr?: number;
   exponential?: boolean;
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
@@ -19,10 +22,10 @@ export interface ExpansionInputs {
 
 type IntegrationResult = {
   s: number;
-  sumTh0: number;
-  sumThs1: number;
-  stepCount: number;
-  lastStep: number;
+  tNow: number;
+  dNow: number;
+  // dHor: number;
+  dPar: number;
 };
 
 type ExpansionResult = {
@@ -59,106 +62,49 @@ const calculateExpansionForStretchValues = (
   inputs: ExpansionInputs
 ): IntegrationResult[] => {
   // Convert stretch values in descending order into integration points in
-  // ascending order, ensuring s = 1 exactly is in the list.
-  const points: number[] = [];
+  // ascending order.
+  const infty = Number.POSITIVE_INFINITY;
+  const sPoints = stretchValues.slice().reverse();
+  const isInfinityIncluded = sPoints[sPoints.length - 1] === infty;
 
-  let isBelowOne = true;
-  for (let i = stretchValues.length - 1; i >= 0; --i) {
-    const value = stretchValues[i];
-    if (isBelowOne) {
-      if (value > 1) {
-        isBelowOne = false;
-        points.push(1);
-      } else if (value === 1) {
-        isBelowOne = false;
-      }
-    }
-    points.push(value);
+  if (!isInfinityIncluded) {
+    sPoints.push(infty);
   }
-  if (isBelowOne) {
-    points.push(1);
-  }
-  points.push(Infinity);
+
+  // We assume zero is not included.
+  sPoints.unshift(0);
 
   // Get a calculator for density using any provided overrides.
-  const { TH } = getModel(inputs);
+  const { TH, THs } = getModel(inputs);
+  const options = { maxDepth: 16 };
+
+  const thResults = integrate.quad(TH, sPoints, options);
+  // Make sure we don't calculate THs at s = 0: discontinuity!
+  const thsResults = integrate.quad(THs, sPoints.slice(1), options);
+  // Put in the initial value.
+  thsResults[1].points.unshift([0, {}]);
+  const thAtOne = integrate.quad(TH, [0, 1], options)[0];
+  const thAtInfinity = thResults[0];
+  const thsAtInfinity = thsResults[0];
 
   // Create an array to build the return values.
   const results: IntegrationResult[] = [];
 
-  // Start at s = 0.
-  let s = 0;
-  let sumTh0 = 0;
-  let sumThs1 = 0;
-  let deltaS = 0.0001;
-  let stepCount = 0;
+  // Discard the initial zero start point.
+  sPoints.shift();
 
-  // Integrate up, storing values at each data point.
-  isBelowOne = true;
-  let lastTH = TH(s);
-  let lastTHs = lastTH / s;
-
-  for (let i = 0; i < points.length; ++i) {
-    const nextValue = points[i];
-
-    if (isBelowOne) {
-      while (s < nextValue) {
-        // Trapezium rule step.
-        // Calculate step length avoiding overshoot.
-        deltaS = Math.min(deltaS * 1.001, nextValue - s);
-
-        const nextTH = TH(s + deltaS);
-        s += deltaS;
-        sumTh0 += deltaS * ((lastTH + nextTH) / 2);
-        lastTH = nextTH;
-        ++stepCount;
-      }
-      if (nextValue >= 1) {
-        isBelowOne = false;
-        lastTHs = lastTH / s;
-      }
-    } else if (nextValue < Infinity) {
-      while (s < nextValue) {
-        // Trapezium rule step.
-        // Calculate step length avoiding overshoot.
-        deltaS = Math.min(deltaS * 1.001, nextValue - s);
-        const nextTH = TH(s + deltaS);
-        const nextTHs = nextTH / (s + deltaS);
-        s += deltaS;
-        sumTh0 += deltaS * ((lastTH + nextTH) / 2);
-        sumThs1 += deltaS * ((lastTHs + nextTHs) / 2);
-        lastTH = nextTH;
-        lastTHs = nextTHs;
-        ++stepCount;
-      }
-    } else {
-      // Integrate to infinity.
-      while (s < nextValue) {
-        // Trapezium rule step.
-        // Calculate step length avoiding overshoot.
-        if (s < 4000) {
-          deltaS = deltaS * 1.001;
-        } else {
-          deltaS = deltaS * 1.1;
-        }
-        const nextTH = TH(s + deltaS);
-        const nextTHs = nextTH / (s + deltaS);
-        if (isNaN(nextTHs)) break;
-        s += deltaS;
-        sumTh0 += deltaS * ((lastTH + nextTH) / 2);
-        sumThs1 += deltaS * ((lastTHs + nextTHs) / 2);
-        lastTH = nextTH;
-        lastTHs = nextTHs;
-        ++stepCount;
-      }
-    }
+  let th = 0;
+  let ths = 0;
+  for (let i = 0; i < sPoints.length - (isInfinityIncluded ? 0 : 1); ++i) {
+    th += thResults[1].points[i][0];
+    ths += thsResults[1].points[i][0];
+    const s = sPoints[i];
 
     results.push({
       s,
-      stepCount,
-      lastStep: deltaS,
-      sumTh0,
-      sumThs1,
+      tNow: thsAtInfinity - ths,
+      dNow: Math.abs(th - thAtOne),
+      dPar: (thAtInfinity - th) / s,
     });
   }
 
@@ -166,78 +112,56 @@ const calculateExpansionForStretchValues = (
 };
 
 const createExpansionResults = (
-  stretchValues: number[],
   integrationResults: IntegrationResult[],
   inputs: ExpansionInputs
 ): ExpansionResult[] => {
   const model = getModel(inputs);
 
-  let sumThAt1 = 0;
-
-  // Extract the results at s = 1.
-  for (let i = 0; i < integrationResults.length; ++i) {
-    if (integrationResults[i].s === 1) {
-      ({ sumTh0: sumThAt1 } = integrationResults[i]);
-      break;
-    }
-  }
-
-  // Extract the results at s = Infinity.
-  const sumThs1ToInfinity =
-    integrationResults[integrationResults.length - 1].sumThs1;
-  const sumTh0ToInfinity =
-    integrationResults[integrationResults.length - 1].sumTh0;
-
   const results: ExpansionResult[] = [];
 
-  let stretchValuesIndex = 0;
-  // Do not take the last integration result: it is at infinity!
-  for (let i = integrationResults.length - 2; i >= 0; --i) {
-    if (integrationResults[i].s === stretchValues[stretchValuesIndex]) {
-      const { s, sumTh0, sumThs1 } = integrationResults[i];
+  for (let i = integrationResults.length - 1; i >= 0; --i) {
+    const { s, tNow, dNow, dPar } = integrationResults[i];
 
-      const params = model.getParamsAtStretch(s);
-      const {
-        H_t,
-        OmegaMatterT,
-        OmegaLambdaT,
-        OmegaRadiationT,
-        TemperatureT,
-        rhocrit,
-        OmegaTotalT,
-      } = params;
+    const params = model.getParamsAtStretch(s);
+    const {
+      // H_t,
+      OmegaMatterT,
+      OmegaLambdaT,
+      OmegaRadiationT,
+      TemperatureT,
+      rhocrit,
+      OmegaTotalT,
+    } = params;
 
-      // Current radius = ## \integral_0^s TH(s) ##.
-      const Dnow = Math.abs(sumTh0 - sumThAt1);
-      const Dthen = Dnow / s;
-      const a = 1 / s;
-      const Y = 1 / H_t;
+    // Current radius = ## \integral_0^s TH(s) ##.
+    const Dthen = dNow / s;
+    const a = 1 / s;
+    const H_t = model.H(s);
 
-      results.push({
-        s, // Stretch.
-        a,
-        z: s - 1, // Redshift.
-        Vnow: Dnow * model.H0conv,
-        Vthen: Dthen * H_t,
-        Tnow: sumThs1ToInfinity - sumThs1,
-        Y,
-        Dnow,
-        Dthen,
-        // Dhor: Y, // sumTh0 / s,
-        //@TODO or should it be this per Ibix?
-        Dhor: Y, // Math.max(sumTh0 / s, Y),
-        XDpar: (a * H_t) / model.H0conv,
-        Dpar: (sumTh0ToInfinity - sumTh0) / s,
-        H_t,
-        OmegaMatterT,
-        OmegaLambdaT,
-        OmegaRadiationT,
-        TemperatureT,
-        rhocrit,
-        OmegaTotalT,
-      });
-      ++stretchValuesIndex;
-    }
+    results.push({
+      z: s - 1, // Redshift.
+      a,
+      s, // Stretch.
+      Tnow: tNow,
+      // R
+      Dnow: dNow,
+      Dthen,
+      Dhor: 1 / H_t,
+      Dpar: dPar,
+      // XDpar seems to be reported as Vgen.
+      XDpar: (a * H_t) / model.H0GYr,
+      Vnow: dNow * model.H0GYr,
+      Vthen: Dthen * H_t,
+      // Do we need both H_t and Y?
+      H_t: H_t / model.convertToGyr,
+      Y: 1 / H_t,
+      TemperatureT,
+      rhocrit,
+      OmegaMatterT,
+      OmegaLambdaT,
+      OmegaRadiationT,
+      OmegaTotalT,
+    });
   }
 
   return results;
@@ -260,11 +184,7 @@ const calculateExpansion = (inputs: ExpansionInputs): ExpansionResult[] => {
   );
 
   // Create the tabulated results.
-  const results = createExpansionResults(
-    stretchValues,
-    integrationResults,
-    inputs
-  );
+  const results = createExpansionResults(integrationResults, inputs);
 
   return results;
 };
