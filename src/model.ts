@@ -33,12 +33,8 @@ export const getModel = (inputs: ExpansionInputs) => {
 
   // const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
 
-  //@TODO check this - should it be s_eq + 1 as the original, or as below
-  // from Ibix?
-  // const OmegaM = ((Omega - OmegaL) * s_eq) / (s_eq + 1); // Energy density of matter
-  // const OmegaR = OmegaM / s_eq; // Energy density of radiation
-  const OmegaM = ((Omega - OmegaL) * (s_eq + 1)) / (s_eq + 2); // Energy density of matter
-  const OmegaR = OmegaM / (s_eq + 1); // Energy density of radiation
+  const OmegaM = ((Omega - OmegaL) * s_eq) / (s_eq + 1); // Energy density of matter
+  const OmegaR = OmegaM / s_eq; // Energy density of radiation
 
   const OmegaK = 1 - OmegaM - OmegaR - OmegaL; // Curvature energy density
 
