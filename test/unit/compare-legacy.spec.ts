@@ -1,8 +1,11 @@
 import { expect } from 'chai';
 
-import { CalculateTage } from '../../src/legacy.js';
-import { calculateExpansion } from '../../src/expansion';
+import { convertLegacyInputs, CalculateTage } from '../legacy.js';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as legacy from '../legacy-calculation.js';
+
+import { calculateExpansion } from '../../src/expansion.js';
 
 const getLegacyInputs = () => {
   const H_0 = 67.74;
@@ -37,13 +40,15 @@ describe('Performance vs legacy calculations', function () {
   it('should calculate Tage for the default inputs', function () {
     const legacyTage = legacy.CalculateTage(getLegacyInputs());
     const age = CalculateTage(getLegacyInputs());
-    expect(age).to.be.closeTo(legacyTage, 1e-4);
+    expect(age / legacyTage).to.be.closeTo(1, 1e-3);
   });
 
   it('should calculate expansion for the default inputs', function () {
-    const legacyResults = legacy.Calculate(getLegacyInputs());
+    const inputs = convertLegacyInputs(getLegacyInputs());
+    const legacyResults = legacy.Calculate(inputs);
 
     const results = calculateExpansion({
+      ...inputs,
       stretch,
     });
 

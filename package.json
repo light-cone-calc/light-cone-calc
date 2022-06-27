@@ -3,12 +3,20 @@
   "version": "0.9.0-dev",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
-    "dist"
+    "dist",
+    "types"
   ],
   "type": "module",
   "browser": "dist/cosmic-inflation.min.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "types": "types",
   "scripts": {
-    "build": "rimraf dist cjs esm && rollup -c && npm run test:dist",
+    "build": "rimraf dist && rollup -c && tsc --project tsconfig.types.json && npm run test:dist",
     "ci": "npm run lint && npm run test:unit && npm run build",
     "docs": "typedoc src/expansion.ts",
     "lint": "prettier . --check && eslint .",

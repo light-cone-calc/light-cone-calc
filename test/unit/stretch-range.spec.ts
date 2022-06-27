@@ -5,7 +5,7 @@ import { getStretchValues } from '../../src/stretch-range';
 const steps = getStretchValues({
   stretch: [1090 + 1, 0.01],
   steps: 10,
-  exponential: true,
+  isExponential: true,
 });
 
 describe('Step range calculations', function () {
@@ -29,7 +29,7 @@ describe('Step range calculations', function () {
     const steps = getStretchValues({
       stretch: [8, 0.25],
       steps: 5,
-      exponential: true,
+      isExponential: true,
     });
     expect(steps).to.eql([8, 4, 2, 1, 0.5, 0.25]);
   });

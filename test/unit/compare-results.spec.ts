@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Calculate } from '../../src/legacy.js';
+import { Calculate } from '../legacy.js';
 
 const getLegacyInputs = () => {
   const H_0 = 67.74;

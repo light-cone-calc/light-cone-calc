@@ -3,27 +3,38 @@ import { expect } from 'chai';
 import { calculateExpansion } from '../../src/expansion';
 
 describe('Expansion calculations', function () {
-  it('should calculate expansion for the default inputs', function () {
-    const results = calculateExpansion({
-      stretch: [1091, 0.01],
-      steps: 10,
-      exponential: true,
+  it('should calculate expansion for the default inputs (Planck 2018)', function () {
+    // Current age of the universe.
+    const t0 = 13.787;
+    // Redshift at separation.
+    const zstar = 1089.8;
+    // Radius at separation.
+    // const rstar = (144.57 * 3.26156) / 1000;
+
+    const [atSeparation, now] = calculateExpansion({
+      // ## z_* ##, the redshift at photon separationfrom Planck 2018 is 1089.8
+      stretch: [1 + zstar, 1],
     });
 
     // This validates the integration of THs to infinity.
     // (13.8Gy since big bang).
-    expect(results[6].s).to.equal(1);
-    expect(results[6].Tnow / 13.8).to.be.closeTo(1, 1e-5);
 
-    const result = results[0];
-    expect(result.z).to.equal(1090);
-    expect(result.a).to.equal(1 / 1091);
-    expect(result.s).to.equal(1091);
+    expect(now.z).to.equal(0);
+    expect(now.Tnow).to.be.closeTo(t0, 0.0005);
+    expect(now.Dnow).to.equal(0);
+    expect(now.Dthen).to.equal(0);
+    expect(now.XDpar).to.equal(1);
+    expect(now.Vnow).to.equal(0);
+    expect(now.Vthen).to.equal(0);
 
-    expect(result.Dnow / 45.35442113146).to.be.closeTo(1, 1e-5);
-    expect(result.Dthen / 4.157145985602e-2).to.be.closeTo(1, 1e-6);
+    expect(atSeparation.z).to.equal(zstar);
+    expect(atSeparation.a).to.equal(1 / (1 + zstar));
+    expect(atSeparation.s).to.equal(1 + zstar);
+
+    // expect(atSeparation.Dnow / 45.35442113146).to.be.closeTo(1, 1e-5);
+    // expect(atSeparation.Dthen).to.be.closeTo(rstar, 1e-5);
     // expect(result.Dhor / 5.673735574007e-2).to.be.closeTo(1, 1e-6);
-    expect(result.Tnow / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
+    // expect(atSeparation.Tnow / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
   });
 
   it('should calculate expansion for values close to s = 1', function () {

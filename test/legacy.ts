@@ -1,11 +1,14 @@
-// Legacy interface
-import type { ExpansionInputs } from './expansion';
+// cosmic-inflation/src/legacy.ts
+
+// Provide light-cone-calc legacy interface.
+
+import type { ExpansionInputs } from '../src/expansion';
 
 import {
   calculateAge,
   calculateExpansion,
   convertResultUnits,
-} from './expansion';
+} from '../src/expansion';
 
 type LegacyExpansionInputs = {
   Ynow: number;
@@ -18,13 +21,17 @@ type LegacyExpansionInputs = {
   exponential: boolean | 0 | 1;
 };
 
+export const xlegacyConstants = {
+  gyrToSeconds: 3.1536e16,
+};
+
 /**
  * Sanitize raw inputs to `getExpansionResults()`.
  *
  * @param inputs Raw inputs.
  * @returns Sanitized inputs.
  */
-const convertLegacyInputs = (
+export const convertLegacyInputs = (
   inputs: LegacyExpansionInputs
 ): ExpansionInputs => {
   const { Ynow, s_eq, Omega, s_lower, s_upper, s_step, exponential } = inputs;
@@ -34,15 +41,16 @@ const convertLegacyInputs = (
   const H0GYr = 1 / Ynow; // Hubble const now
 
   return {
-    Ynow,
-    Yinf,
-    s_eq,
-    Omega,
-    OmegaL,
-    H0GYr,
+    // Ynow,
+    // Yinf,
+    zeq: s_eq - 1,
+    omega: Omega,
+    omegalambda: OmegaL,
+    // The legacy code passes Ynow = 978 / H_0.
+    h0: H0GYr * 978,
     stretch: [s_upper, s_lower],
     steps: s_step,
-    exponential: exponential ? true : false,
+    isExponential: exponential ? true : false,
   };
 };
 

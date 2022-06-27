@@ -1,12 +1,14 @@
-/**
- * Calculate expansion results.
- */
+// cosmic-inflation/src/expansion.ts
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import type { ModelParameters } from './model';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { integrate } from '@rec-math/math/esm/index.js';
 import { getStretchValues } from './stretch-range.js';
-import { getModel } from './model.js';
+import { create } from './model.js';
 
 /**
  * @interface ExpansionInputs
@@ -49,24 +51,9 @@ import { getModel } from './model.js';
  *
  */
 
-export interface ExpansionInputs {
-  /** Documents Ynow */
-  Ynow?: number;
-  /** Documents Yinf */
-  Yinf?: number;
-  /** Documents Yinf */
-  s_eq?: number;
-  /** Documents Yinf */
-  Omega?: number;
-  /** Documents Yinf */
-  OmegaL?: number;
-  /** Documents Yinf */
-  H0GYr?: number;
-  /** Documents Yinf */
-  exponential?: boolean;
-  /** Documents Yinf */
+export interface ExpansionInputs extends ModelParameters {
+  isExponential?: boolean;
   stretch: [upper: number, lower: number] | number[];
-  /** Documents Yinf */
   steps?: number;
 }
 
@@ -125,7 +112,7 @@ const calculateExpansionForStretchValues = (
   sPoints.unshift(0);
 
   // Get a calculator for density using any provided overrides.
-  const { TH, THs } = getModel(inputs);
+  const { TH, THs } = create(inputs);
   const options = { maxDepth: 16 };
 
   const thResults = integrate.quad(TH, sPoints, options);
@@ -171,7 +158,7 @@ const createExpansionResults = (
   integrationResults: IntegrationResult[],
   inputs: ExpansionInputs
 ): ExpansionResult[] => {
-  const model = getModel(inputs);
+  const model = create(inputs);
 
   const results: ExpansionResult[] = [];
 
@@ -189,24 +176,26 @@ const createExpansionResults = (
       OmegaTotalT,
     } = params;
 
+    const z = s - 1;
+    const Dnow = z === 0 && Math.abs(dNow) < 1e-8 ? 0 : dNow;
     // Current radius = ## \integral_0^s TH(s) ##.
-    const Dthen = dNow / s;
+    const Dthen = Dnow / s;
     const a = 1 / s;
     const H_t = model.H(s);
 
     results.push({
-      z: s - 1, // Redshift.
+      z,
       a,
       s, // Stretch.
       Tnow: tNow,
       // R
-      Dnow: dNow,
+      Dnow,
       Dthen,
       Dhor: 1 / H_t,
       Dpar: dPar,
       // XDpar seems to be reported as Vgen.
       XDpar: (a * H_t) / model.H0GYr,
-      Vnow: dNow * model.H0GYr,
+      Vnow: Dnow * model.H0GYr,
       Vthen: Dthen * H_t,
       // The legacy test says we don't want to convert.
       // H_t: H_t / model.convertToGyr,

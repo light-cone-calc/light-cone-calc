@@ -6,7 +6,6 @@
 # No lockfile for a module.
 /package-lock.json
 
-# Distribution files.
+# Distribution bundle.
 /dist/
-/esm/
-/cjs/
+/types/

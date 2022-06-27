@@ -30,20 +30,28 @@ export default [
         format: 'iife',
         banner,
         name: camelCase(pkg.name, { pascalCase: true }),
+        file: pkg.browser.replace('.min', ''),
+        sourcemap: true,
+      },
+    ],
+
+    plugins: [typescript()],
+  },
+  // Minified iife build for browser.
+  {
+    input,
+
+    output: [
+      {
+        format: 'iife',
+        banner,
+        name: camelCase(pkg.name, { pascalCase: true }),
         file: pkg.browser,
         sourcemap: true,
       },
     ],
 
-    plugins: [
-      typescript({
-        compilerOptions: {
-          module: 'esnext',
-          outDir: 'dist',
-        },
-      }),
-      terser(),
-    ],
+    plugins: [typescript(), terser()],
   },
   // Common JS build for require().
   {
@@ -53,19 +61,12 @@ export default [
       {
         format: 'cjs',
         banner,
-        file: 'cjs/index.cjs',
+        file: 'dist/index.cjs',
         sourcemap: true,
       },
     ],
 
-    plugins: [
-      typescript({
-        compilerOptions: {
-          module: 'esnext',
-          outDir: 'cjs',
-        },
-      }),
-    ],
+    plugins: [typescript()],
   },
   // Common JS build for require().
   {
@@ -75,20 +76,11 @@ export default [
       {
         format: 'es',
         banner,
-        name: camelCase(pkg.name, { pascalCase: true }),
-        // file: pkg.browser,
-        dir: 'esm',
+        file: 'dist/index.js',
         sourcemap: true,
       },
     ],
 
-    plugins: [
-      typescript({
-        compilerOptions: {
-          module: 'esnext',
-          outDir: 'esm',
-        },
-      }),
-    ],
+    plugins: [typescript()],
   },
 ];

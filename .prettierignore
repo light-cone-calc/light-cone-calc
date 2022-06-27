@@ -1,9 +1,8 @@
 # .prettierignore
 
-# Distribution bundles.
+# Distribution bundle.
 /dist/
-/esm/
-/cjs/
+/types/
 
 # Generated documentation.
 /docs/

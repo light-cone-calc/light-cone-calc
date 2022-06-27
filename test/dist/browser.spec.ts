@@ -1,27 +1,30 @@
 import { expect } from 'chai';
-
 import { readFileSync } from 'fs';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import api from './api.cjs';
 
 // Enter the module name created by the IIFE here.
 const moduleName = 'CosmicInflation';
+const fileName = 'dist/cosmic-inflation.min.js';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
-const iife = readFileSync(pkg.browser, 'utf8');
+const iife = readFileSync(fileName, 'utf8');
 
-const LightConeCalc = eval(`(() => {${iife}; return ${moduleName}})()`);
+const CosmicInflation = eval(`(() => {${iife}; return ${moduleName}})()`);
 
 describe('The browser distribution', function () {
+  it('should be defined in package.json `browser`', function () {
+    expect(pkg.browser).to.equal(fileName);
+  });
+
   it('should have the same version as package.json', function () {
-    expect(LightConeCalc.version).to.equal(pkg.version);
+    expect(CosmicInflation.version).to.equal(pkg.version);
   });
 
   it('should expose the new and legacy APIs', function () {
-    const api = ['calculateExpansion', 'version'];
-    const legacyApi = ['Calculate', 'CalculateTage', 'ScaleResults'];
-
-    expect(Object.keys(LightConeCalc).sort()).to.eql(
-      [...api, ...legacyApi].sort()
-    );
+    expect(Object.keys(CosmicInflation).sort()).to.eql(api.sort());
   });
 });
