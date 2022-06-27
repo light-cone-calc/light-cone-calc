@@ -1,15 +1,16 @@
 {
-  "name": "light-cone-calc",
-  "version": "1.8.2",
+  "name": "cosmic-inflation",
+  "version": "0.9.0-dev",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
     "dist"
   ],
   "type": "module",
-  "browser": "dist/light-cone-calc.min.js",
+  "browser": "dist/cosmic-inflation.min.js",
   "scripts": {
-    "build": "rimraf dist && rollup -c && npm run test:dist",
+    "build": "rimraf dist cjs esm && rollup -c && npm run test:dist",
     "ci": "npm run lint && npm run test:unit && npm run build",
+    "docs": "typedoc src/expansion.ts",
     "lint": "prettier . --check && eslint .",
     "lint:fix": "prettier . --write && eslint . --fix",
     "test": "npm run lint:fix && npm run test:unit",
@@ -18,20 +19,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lightcone7/light-cone-calc.git"
+    "url": "git+https://github.com/pb-uk/cosmic-inflation.git"
   },
   "keywords": [
-    "light cone",
     "calculator",
+    "cosmic",
+    "cosmology",
+    "expansion",
+    "inflation",
     "lcdm",
     "physics"
   ],
-  "author": "https://github.com/lightcone7/",
+  "author": "https://github.com/pb-uk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lightcone7/light-cone-calc/issues"
+    "url": "https://github.com/pb-uk/cosmic-inflation/issues"
   },
-  "homepage": "https://github.com/lightcone7/light-cone-calc#readme",
+  "homepage": "https://pb-uk.github.io/cosmic-inflation",
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.2",
     "@types/chai": "^4.3.1",
@@ -49,6 +53,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "ts-node": "^10.7.0",
     "tslib": "^2.4.0",
+    "typedoc": "^0.23.1",
     "typescript": "^4.6.4"
   },
   "dependencies": {
