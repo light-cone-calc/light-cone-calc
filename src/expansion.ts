@@ -8,15 +8,65 @@ import { integrate } from '@rec-math/math/esm/index.js';
 import { getStretchValues } from './stretch-range.js';
 import { getModel } from './model.js';
 
+/**
+ * @interface ExpansionInputs
+ *
+ * Description         | \LaTeX      | variable |
+ * --------------------|:-----------:|:--------:|
+ * **Independent parameters**
+ * Physical baryon density parameter | \Omega_bh^2 | omegabh2 |
+ * Physical DM density parameter     | \Omega_ch^2 | omegach2 |
+ * Age of the universe               | t_0         | t0       |
+ * Scalar spectral index             | n_s         | ns       |
+ * Curvature fluctuation amplitude   | \Delta^2_R  | delta2r  |
+ * Reionization optical depth        | \tau        | tau      |
+ * **Fixed parameters**
+ * Total density parameter           | \Omega_{tot} | omegatot |
+ * DE equation of state parameter    | w_0          | w0       |
+ * Tensor-to-scalar ratio            | r_{0.002}    | r0002    |
+ * Running of spectral index         | dn_s/d\ln k  | dnsdlnk  |
+ * (Sum of) neutrino masses          | \Sigma m_\nu | sigmamnu |
+ * Effective extra relativistic DoF  | N_{eff}      | neff     |
+ * **Fixed parameters**
+ * Hubble constant                   | H_0          | h0       |
+ * Baryon density parameter          | \Omega_b     | omegab   |
+ * DM density parameter              | \Omega_c     | omegac   |
+ * Matter density parameter          | \Omega_m     | omegam   |
+ * Dark energy density parameter     | \Omega_\Lambda | omegalambda |
+ * Critical density                  | \rho_{crit}  | rhocrit  |
+ * Matter fluctuation amplitude [1]  | \sigma_8     | sigma8   |
+ * Redshift at decoupling            | z_*          | zstar    |
+ * Age at decoupling                 | t_*          | tstar    |
+ * Redshift of reionization (with uniform prior) | z_{re} | zre |
+ *
+ *
+ * Angular acoustic scale | 100\Theta_* | thetastar100 |
+ * Matter density parameter | \Omega_m  | omegam       |
+ * Spatial curvature            | \Omega_K     | omegak   |
+ * Physical nutrino density parameter | \Omega_bh^2 | omegabh2 |
+ *
+ * [1] The present root-mean-square matter fluctuation averaged over a sphere of radius 8h–1 Mpc
+ *
+ */
+
 export interface ExpansionInputs {
+  /** Documents Ynow */
   Ynow?: number;
+  /** Documents Yinf */
   Yinf?: number;
+  /** Documents Yinf */
   s_eq?: number;
+  /** Documents Yinf */
   Omega?: number;
+  /** Documents Yinf */
   OmegaL?: number;
+  /** Documents Yinf */
   H0GYr?: number;
+  /** Documents Yinf */
   exponential?: boolean;
+  /** Documents Yinf */
   stretch: [upper: number, lower: number] | number[];
+  /** Documents Yinf */
   steps?: number;
 }
 

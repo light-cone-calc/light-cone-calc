@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { readFileSync } from 'fs';
 
 // Enter the module name created by the IIFE here.
-const moduleName = 'LightConeCalc';
+const moduleName = 'CosmicInflation';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 

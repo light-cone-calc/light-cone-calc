@@ -3,8 +3,10 @@
 # Dependency directories.
 /node_modules/
 
-# Distribution files.
-/dist/
-
 # No lockfile for a module.
 /package-lock.json
+
+# Distribution files.
+/dist/
+/esm/
+/cjs/

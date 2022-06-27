@@ -2,3 +2,8 @@
 
 # Distribution bundles.
 /dist/
+/esm/
+/cjs/
+
+# Generated documentation.
+/docs/

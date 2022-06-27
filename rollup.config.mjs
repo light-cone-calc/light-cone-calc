@@ -45,4 +45,50 @@ export default [
       terser(),
     ],
   },
+  // Common JS build for require().
+  {
+    input,
+
+    output: [
+      {
+        format: 'cjs',
+        banner,
+        file: 'cjs/index.cjs',
+        sourcemap: true,
+      },
+    ],
+
+    plugins: [
+      typescript({
+        compilerOptions: {
+          module: 'esnext',
+          outDir: 'cjs',
+        },
+      }),
+    ],
+  },
+  // Common JS build for require().
+  {
+    input,
+
+    output: [
+      {
+        format: 'es',
+        banner,
+        name: camelCase(pkg.name, { pascalCase: true }),
+        // file: pkg.browser,
+        dir: 'esm',
+        sourcemap: true,
+      },
+    ],
+
+    plugins: [
+      typescript({
+        compilerOptions: {
+          module: 'esnext',
+          outDir: 'esm',
+        },
+      }),
+    ],
+  },
 ];
