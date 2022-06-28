@@ -9,3 +9,6 @@
 # Distribution bundle.
 /dist/
 /types/
+
+# Generated documentation.
+/docs/
