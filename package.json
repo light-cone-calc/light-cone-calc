@@ -16,9 +16,9 @@
   },
   "types": "types",
   "scripts": {
-    "build": "rimraf dist && rollup -c && tsc --project tsconfig.types.json && npm run test:dist",
+    "build": "rimraf dist types && rollup -c && tsc --project tsconfig.types.json && npm run test:dist",
     "ci": "npm run lint && npm run test:unit && npm run build",
-    "docs": "typedoc src/expansion.ts",
+    "docs": "typedoc",
     "lint": "prettier . --check && eslint .",
     "lint:fix": "prettier . --write && eslint . --fix",
     "test": "npm run lint:fix && npm run test:unit",

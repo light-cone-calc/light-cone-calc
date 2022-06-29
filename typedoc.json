@@ -1,0 +1,9 @@
+{
+  "entryPoints": [
+    "src/index.ts",
+    "src/expansion.ts",
+    "src/stretch-range.ts",
+    "src/model.ts"
+  ],
+  "plugin": ["./typedoc.plugin.cjs"]
+}

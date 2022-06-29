@@ -1,6 +1,6 @@
-// cosmic-inflation/src/legacy.ts
+// cosmic-inflation/src/model.ts
 
-const physicalConstants = {
+export const physicalConstants = {
   /**
    * Temperature of the cosmic microwave background radiation (K).
    *
@@ -25,10 +25,10 @@ const physicalConstants = {
   /**
    * Conversion factor for the Hubble parameter.
    *
-   * Convert from ## km.s^{-1}Mpsc^{-1} ## to ## Gyr ##. Calculation:
-   *   - 1 parsec = ## 648,000 / \pi ## au.
+   * Convert from \\( km.s^{-1}Mpsc^{-1} \\) to Gyr. Calculation:
+   *   - 1 parsec = \\( 648,000 / \pi \\) au.
    *   - 1 au = 149,597,870,700 m.
-   *   - 1 Gyr = ## 1e9 \times 365.25 \times 86,400 ## s as above.
+   *   - 1 Gyr = \\( 1e9 \times 365.25 \times 86,400 \\) s as above.
    * $$ \frac{487,000 \pi }{1,495,978,707} \approx 1.022 712 165 045 694 937 $$
    */
   kmsmpscToGyr: 1.022712165045695e-3,
@@ -68,13 +68,13 @@ const surveys = {
  * These parameters may be passed to `create()` to override default parameters.
  */
 export interface ModelParameters {
-  /** Hubble constant ## H_0 ## (in ## km/s/Mpsc ##). */
+  /** Hubble constant \\( H_0 \\) (in km/s/Mpsc). */
   h0?: number;
-  /** Total density paramater ## Omega_{tot} ##. */
+  /** Total density paramater \\( \Omega_{tot} \\). */
   omega?: number;
-  /** Dark energy density parameter ## \Omega_\Lambda ##. */
+  /** Dark energy density parameter \\( \Omega_\Lambda \\). */
   omegalambda?: number;
-  /** Redshift when matter and radiation densities were equal ## z_{eq} ## 3370 in Jorrie. */
+  /** Redshift when matter and radiation densities were equal \\( z_{eq} \\). */
   zeq?: number;
   cmbtemperature?: number;
   // Conversion: multiply (a hubble factor) km/s/Mpsc to get years * 10^9.
