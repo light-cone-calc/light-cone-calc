@@ -2,8 +2,9 @@
 
 import { readFileSync } from 'fs';
 
-import camelCase from 'camelcase';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
+import camelCase from 'camelcase';
 import { terser } from 'rollup-plugin-terser';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
@@ -35,7 +36,7 @@ export default [
       },
     ],
 
-    plugins: [typescript()],
+    plugins: [nodeResolve(), typescript()],
   },
   // Minified iife build for browser.
   {
@@ -51,7 +52,7 @@ export default [
       },
     ],
 
-    plugins: [typescript(), terser()],
+    plugins: [nodeResolve(), typescript(), terser()],
   },
   // Common JS build for require().
   {
@@ -66,7 +67,7 @@ export default [
       },
     ],
 
-    plugins: [typescript()],
+    plugins: [nodeResolve(), typescript()],
   },
   // Common JS build for require().
   {
@@ -81,6 +82,6 @@ export default [
       },
     ],
 
-    plugins: [typescript()],
+    plugins: [nodeResolve(), typescript()],
   },
 ];

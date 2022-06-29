@@ -1,5 +1,22 @@
 // cosmic-inflation/src/model.ts
 
+export type LcdmModel = {
+  kmsmpscToGyr: number;
+  H0GYr: number;
+  H: (s: number) => number;
+  getParamsAtStretch: (s: number) => LcdmModelVariables;
+};
+
+type LcdmModelVariables = {
+  H_t: number;
+  OmegaMatterT: number;
+  OmegaLambdaT: number;
+  OmegaRadiationT: number;
+  TemperatureT: number;
+  rhocrit: number;
+  OmegaTotalT: number;
+};
+
 export const physicalConstants = {
   /**
    * Temperature of the cosmic microwave background radiation (K).
@@ -67,7 +84,7 @@ const surveys = {
 /**
  * These parameters may be passed to `create()` to override default parameters.
  */
-export interface ModelParameters {
+export interface LcdmModelParameters {
   /** Hubble constant \\( H_0 \\) (in km/s/Mpsc). */
   h0?: number;
   /** Total density paramater \\( \Omega_{tot} \\). */
@@ -86,7 +103,7 @@ export interface ModelParameters {
   rhoConst?: number;
 }
 
-export const create = (options: ModelParameters) => {
+export const create = (options: LcdmModelParameters): LcdmModel => {
   // Constants derived from inputs
   const survey = surveys[options.survey || 'planck2018'];
   const {
@@ -129,25 +146,7 @@ export const create = (options: ModelParameters) => {
     );
   };
 
-  const TH = (s: number): number => {
-    const s2 = s * s;
-    // Calculate the reciprocal of the time-dependent density.
-    const H =
-      H0GYr *
-      Math.sqrt(omegalambda + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2);
-    return 1 / H;
-  };
-
-  const THs = (s: number): number => {
-    const s2 = s * s;
-    // Calculate the reciprocal of the time-dependent density.
-    const H =
-      H0GYr *
-      Math.sqrt(omegalambda + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2);
-    return 1 / (s * H);
-  };
-
-  const getParamsAtStretch = (s: number) => {
+  const getParamsAtStretch = (s: number): LcdmModelVariables => {
     const H_t = H(s);
     const s2 = s * s;
     // const hFactor = (H_0 / H_t) ** 2;
@@ -170,8 +169,6 @@ export const create = (options: ModelParameters) => {
     kmsmpscToGyr,
     H0GYr,
     H,
-    TH,
-    THs,
     getParamsAtStretch,
   };
 };

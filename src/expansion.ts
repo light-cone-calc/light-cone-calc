@@ -1,16 +1,14 @@
 // cosmic-inflation/src/expansion.ts
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import type { ModelParameters } from './model';
+import type { LcdmModel, LcdmModelParameters } from './model';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { integrate } from '@rec-math/math/esm/index.js';
+import { numerical } from '@rec-math/math';
+
 import { getStretchValues } from './stretch-range.js';
-import { create } from './model.js';
+import { create as createLcdmModel } from './model.js';
 
-export interface ExpansionInputs extends ModelParameters {
+export interface ExpansionInputs extends LcdmModelParameters {
   isExponential?: boolean;
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
@@ -49,6 +47,13 @@ export type ExpansionResult = {
   OmegaTotalT: number;
 };
 
+const getFunctionsFromModel = (model: LcdmModel) => {
+  return {
+    TH: (s: number): number => 1 / model.H(s),
+    THs: (s: number): number => 1 / (s * model.H(s)),
+  };
+};
+
 /**
  * Get a list of cosmic expansion results for a range of stretch values.
  *
@@ -73,22 +78,24 @@ const calculateExpansionForStretchValues = (
   // We assume zero is not included.
   sPoints.unshift(0);
 
-  // Get a calculator for density using any provided overrides.
-  const { TH, THs } = create(inputs);
-  const options = { maxDepth: 16 };
+  // Create a model for calculating the Hubble factor at a given stretch.
+  const model = createLcdmModel(inputs);
+  const { TH, THs } = getFunctionsFromModel(model);
 
-  const thResults = integrate.quad(TH, sPoints, options);
+  const options = { epsilon: 1e-8 };
+
+  const thResults = numerical.quad(TH, sPoints, options);
+  const thPoints = thResults[1].points || [thResults];
 
   // Make sure we don't calculate THs at s = 0: discontinuity!
-  const thsResults = integrate.quad(THs, sPoints.slice(1), options);
-  if (!thsResults[1].points) {
-    // Put in the initial value.
-    thsResults[1].points = [thsResults];
-  }
-  // Put in the initial value.
-  thsResults[1].points.unshift([0, {}]);
+  const thsResults = numerical.quad(THs, sPoints.slice(1), options);
+  // We may only have one point so this fix is needed.
+  const thsPoints = thsResults[1].points || [thsResults];
 
-  const thAtOne = integrate.quad(TH, [0, 1], options)[0];
+  // Put in the initial value.
+  thsPoints.unshift([0, { steps: 0, errorEstimate: 0, depth: 0 }]);
+
+  const thAtOne = numerical.quad(TH, [0, 1], options)[0];
   const thAtInfinity = thResults[0];
   const thsAtInfinity = thsResults[0];
 
@@ -101,8 +108,10 @@ const calculateExpansionForStretchValues = (
   let th = 0;
   let ths = 0;
   for (let i = 0; i < sPoints.length - (isInfinityIncluded ? 0 : 1); ++i) {
-    th += thResults[1].points[i][0];
-    ths += thsResults[1].points[i][0];
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // ts-ignore
+    th += thPoints[i][0];
+    ths += thsPoints[i][0];
     const s = sPoints[i];
 
     results.push({
@@ -120,7 +129,7 @@ const createExpansionResults = (
   integrationResults: IntegrationResult[],
   inputs: ExpansionInputs
 ): ExpansionResult[] => {
-  const model = create(inputs);
+  const model = createLcdmModel(inputs);
 
   const results: ExpansionResult[] = [];
 
@@ -139,7 +148,8 @@ const createExpansionResults = (
     } = params;
 
     const z = s - 1;
-    const Dnow = z === 0 && Math.abs(dNow) < 1e-8 ? 0 : dNow;
+    // Force Dnow to zero at zero redshift.
+    const Dnow = z === 0 ? 0 : dNow;
     // Current radius = ## \integral_0^s TH(s) ##.
     const Dthen = Dnow / s;
     const a = 1 / s;
