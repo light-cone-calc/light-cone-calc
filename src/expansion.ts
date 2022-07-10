@@ -1,4 +1,4 @@
-// cosmic-inflation/src/expansion.ts
+// cosmic-expansion/src/expansion.ts
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import type { LcdmModel, LcdmModelParameters } from './model';
@@ -9,9 +9,12 @@ import { getStretchValues } from './stretch-range.js';
 import { create as createLcdmModel } from './model.js';
 
 export interface ExpansionInputs extends LcdmModelParameters {
-  isExponential?: boolean;
+  /** Upper and lower bounds for stretch, or an array of values. */
   stretch: [upper: number, lower: number] | number[];
+  /** The number of steps to take between the upper and lower stretch bounds. */
   steps?: number;
+  /** Stretch steps are linear by default, set this to `true` for exponential steps. */
+  exponentialSteps?: boolean;
 }
 
 type IntegrationResult = {
@@ -26,31 +29,44 @@ type IntegrationResult = {
  * A full result from an expansion calculation.
  */
 export type ExpansionResult = {
+  /** Stretch \\( s = z + 1 \\). */
   s: number;
+  /** Scale factor \\( a = 1 / (z + 1) \\). */
   a: number;
+  /** Redshift. */
   z: number;
+  /** Recession rate of a source observed at this redshift \\( c = 1 \\). */
   Vnow: number;
+  /** Recession rate at this redshift when the light was emitted \\( c = 1 \\). */
   Vthen: number;
+  /** Time since the end of inflation \\( GYr \\). */
   Tnow: number;
   Y: number;
+  /** Proper distance of a source observed at this redshift \\( GYr \\). */
   Dnow: number;
+  /** Proper distance at this redshift when the light was emitted \\( GYr \\). */
   Dthen: number;
   Dhor: number;
   XDpar: number;
   Dpar: number;
-  H_t: number;
+  hPerGyr: number; //H_t
+  /** Matter fraction of the critical energy density \\( \rho_{crit}^{-1} \\). */
   OmegaMatterT: number;
+  /** Dark energy fraction of the critical density \\( \rho_{crit}^{-1} \\). */
   OmegaLambdaT: number;
+  /** Radiation density fraction of the critical density \\( \rho_{crit}^{-1} \\). */
   OmegaRadiationT: number;
   TemperatureT: number;
+  /** Critical density ??? */
   rhocrit: number;
+  /** Total energy density fraction of the critical density \\( \rho_{crit}^{-1} \\). */
   OmegaTotalT: number;
 };
 
 const getFunctionsFromModel = (model: LcdmModel) => {
   return {
-    TH: (s: number): number => 1 / model.H(s),
-    THs: (s: number): number => 1 / (s * model.H(s)),
+    TH: (s: number): number => 1 / model.getHAtStretch(s),
+    THs: (s: number): number => 1 / (s * model.getHAtStretch(s)),
   };
 };
 
@@ -153,7 +169,7 @@ const createExpansionResults = (
     // Current radius = ## \integral_0^s TH(s) ##.
     const Dthen = Dnow / s;
     const a = 1 / s;
-    const H_t = model.H(s);
+    const hPerGyr = model.getHAtStretch(s);
 
     results.push({
       z,
@@ -163,16 +179,16 @@ const createExpansionResults = (
       // R
       Dnow,
       Dthen,
-      Dhor: 1 / H_t,
+      Dhor: 1 / hPerGyr,
       Dpar: dPar,
       // XDpar seems to be reported as Vgen.
-      XDpar: (a * H_t) / model.H0GYr,
+      XDpar: (a * hPerGyr) / model.H0GYr,
       Vnow: Dnow * model.H0GYr,
-      Vthen: Dthen * H_t,
+      Vthen: Dthen * hPerGyr,
       // The legacy test says we don't want to convert.
       // H_t: H_t / model.convertToGyr,
-      H_t,
-      Y: 1 / H_t,
+      hPerGyr,
+      Y: 1 / hPerGyr,
       TemperatureT,
       rhocrit,
       OmegaMatterT,

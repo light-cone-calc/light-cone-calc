@@ -1,4 +1,4 @@
-// cosmic-inflation/src/index.ts
+// cosmic-expansion/src/index.ts
 
 export const version = '0.9.0-dev';
 

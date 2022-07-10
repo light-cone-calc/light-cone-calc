@@ -1,5 +1,5 @@
 {
-  "name": "cosmic-inflation",
+  "name": "cosmic-expansion",
   "version": "0.9.0-dev",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
@@ -7,7 +7,7 @@
     "types"
   ],
   "type": "module",
-  "browser": "dist/cosmic-inflation.min.js",
+  "browser": "dist/cosmic-expansion.min.js",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pb-uk/cosmic-inflation.git"
+    "url": "git+https://github.com/pb-uk/cosmic-expansion.git"
   },
   "keywords": [
     "calculator",
@@ -41,9 +41,9 @@
   "author": "https://github.com/pb-uk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pb-uk/cosmic-inflation/issues"
+    "url": "https://github.com/pb-uk/cosmic-expansion/issues"
   },
-  "homepage": "https://pb-uk.github.io/cosmic-inflation",
+  "homepage": "https://pb-uk.github.io/cosmic-expansion",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",

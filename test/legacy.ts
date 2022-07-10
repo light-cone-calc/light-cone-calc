@@ -1,4 +1,4 @@
-// cosmic-inflation/src/legacy.ts
+// cosmic-expansion/src/legacy.ts
 
 // Provide light-cone-calc legacy interface.
 
@@ -50,7 +50,7 @@ export const convertLegacyInputs = (
     h0: H0GYr * 978,
     stretch: [s_upper, s_lower],
     steps: s_step,
-    isExponential: exponential ? true : false,
+    exponentialSteps: exponential ? true : false,
   };
 };
 

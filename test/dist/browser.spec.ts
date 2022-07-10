@@ -6,14 +6,14 @@ import { readFileSync } from 'fs';
 import api from './api.cjs';
 
 // Enter the module name created by the IIFE here.
-const moduleName = 'CosmicInflation';
-const fileName = 'dist/cosmic-inflation.min.js';
+const moduleName = 'CosmicExpansion';
+const fileName = 'dist/cosmic-expansion.min.js';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 const iife = readFileSync(fileName, 'utf8');
 
-const CosmicInflation = eval(`(() => {${iife}; return ${moduleName}})()`);
+const CosmicExpansion = eval(`(() => {${iife}; return ${moduleName}})()`);
 
 describe('The browser distribution', function () {
   it('should be defined in package.json `browser`', function () {
@@ -21,10 +21,10 @@ describe('The browser distribution', function () {
   });
 
   it('should have the same version as package.json', function () {
-    expect(CosmicInflation.version).to.equal(pkg.version);
+    expect(CosmicExpansion.version).to.equal(pkg.version);
   });
 
   it('should expose the new and legacy APIs', function () {
-    expect(Object.keys(CosmicInflation).sort()).to.eql(api.sort());
+    expect(Object.keys(CosmicExpansion).sort()).to.eql(api.sort());
   });
 });

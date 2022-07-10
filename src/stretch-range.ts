@@ -1,10 +1,10 @@
-// cosmic-inflation/src/stretch-range.ts
+// cosmic-expansion/src/stretch-range.ts
 
 /**
  * Compute stretch range.
  */
 type StretchInputs = {
-  isExponential?: boolean;
+  exponentialSteps?: boolean;
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
 };
@@ -67,7 +67,7 @@ const addStretchValues = (
  * @returns Sanitized inputs.
  */
 const getStretchValues = (inputs: StretchInputs): number[] => {
-  const { stretch, steps: stepCount, isExponential } = inputs;
+  const { stretch, steps: stepCount, exponentialSteps } = inputs;
 
   // If there is no count we must have the values already.
   if (!stepCount) {
@@ -80,7 +80,7 @@ const getStretchValues = (inputs: StretchInputs): number[] => {
 
   if (lower > 1 || upper < 1) {
     // If s = 1 is not in the range just do even steps all the way down.
-    if (isExponential) {
+    if (exponentialSteps) {
       addStretchValues(steps, upper, lower, stepCount);
       return steps;
     }
@@ -88,7 +88,7 @@ const getStretchValues = (inputs: StretchInputs): number[] => {
     return steps;
   }
 
-  if (isExponential) {
+  if (exponentialSteps) {
     // Add steps separately above and below 1 to ensure s = 1 is included exactly.
     const factor = (lower / upper) ** (1 / stepCount);
     const countLower = Math.round(Math.log(lower) / Math.log(factor));

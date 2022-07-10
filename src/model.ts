@@ -1,14 +1,25 @@
-// cosmic-inflation/src/model.ts
+// cosmic-expansion/src/model.ts
 
 export type LcdmModel = {
+  /** Temperature of the cosmic microwave background radiation (K). */
+  cmbtemperature: number;
+
+  /** $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$ */
+  rhoConst: number;
+
+  /** Convert gigayears to seconds. */
+  gyrToSeconds: number;
+
+  /** Conversion factor for the Hubble parameter. */
   kmsmpscToGyr: number;
+
   H0GYr: number;
-  H: (s: number) => number;
+  getHAtStretch: (s: number) => number;
   getParamsAtStretch: (s: number) => LcdmModelVariables;
 };
 
 type LcdmModelVariables = {
-  H_t: number;
+  hPerGyr: number;
   OmegaMatterT: number;
   OmegaLambdaT: number;
   OmegaRadiationT: number;
@@ -55,10 +66,12 @@ export const physicalConstants = {
  * Parameters from the Planck 2018 survey.
  *
  * Planck 2018: https://arxiv.org/abs/1807.06209
+ * @todo Check we have the right Planck 2018 parameters.
  * @todo Verify Planck 2015 parameters.
  * @todo Verify WMAP 2013 parameters.
  */
 const surveys = {
+  // Parameters from the Planck 2018 survey - are these the right ones?
   planck2018: {
     h0: 67.66,
     omegalambda: 0.6889,
@@ -138,7 +151,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
    * @param s stretch = 1/a, where a is the usual FLRW scale factor.
    * @returns The Hubble constant at stretch s.
    */
-  const H = (s: number) => {
+  const getHAtStretch = (s: number) => {
     const s2 = s * s;
     return (
       H0GYr *
@@ -147,28 +160,31 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
   };
 
   const getParamsAtStretch = (s: number): LcdmModelVariables => {
-    const H_t = H(s);
+    const hPerGyr = getHAtStretch(s);
     const s2 = s * s;
     // const hFactor = (H_0 / H_t) ** 2;
-    const hFactor = (H0GYr / H_t) ** 2;
+    const hFactor = (H0GYr / hPerGyr) ** 2;
     const OmegaMatterT = (omega - omegalambda) * s2 * s * hFactor;
     const OmegaLambdaT = omegalambda * hFactor;
     const OmegaRadiationT = (OmegaMatterT * s) / seq;
     return {
-      H_t,
+      hPerGyr,
       OmegaMatterT,
       OmegaLambdaT,
       OmegaRadiationT,
       TemperatureT: cmbtemperature * s,
-      rhocrit: rhoConst * (H_t / gyrToSeconds) ** 2,
+      rhocrit: rhoConst * (hPerGyr / gyrToSeconds) ** 2,
       OmegaTotalT: OmegaMatterT + OmegaLambdaT + OmegaRadiationT,
     };
   };
 
   return {
+    cmbtemperature,
+    rhoConst,
+    gyrToSeconds,
     kmsmpscToGyr,
     H0GYr,
-    H,
+    getHAtStretch,
     getParamsAtStretch,
   };
 };
