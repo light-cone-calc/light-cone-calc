@@ -44,35 +44,52 @@ describe('Performance vs legacy calculations', function () {
   });
 
   it('should calculate expansion for the default inputs', function () {
+    const legacyResults = legacy.Calculate(getLegacyInputs());
+
     const inputs = convertLegacyInputs(getLegacyInputs());
-    const legacyResults = legacy.Calculate(inputs);
+    delete inputs.steps;
 
     const results = calculateExpansion({
       ...inputs,
       stretch,
     });
+    //   console.log(results[7], legacyResults[7]);
 
-    const tolerances = {
-      Dpar: 2e-2,
-      default: 1e-2,
-    };
-
+    const eps = Number.EPSILON;
     for (let i = 0; i < legacyResults.length; ++i) {
-      Object.entries(legacyResults[i]).forEach(([key, value]) => {
-        if (value === 0) return;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const tolerance = tolerances[key] ?? tolerances.default;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect(results[i][key] / value).to.be.closeTo(
-          1,
-          tolerance,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          `Result ${i} (s = ${results[i].s}) ${key} Jorrie ${value} actual ${results[i][key]}:`
-        );
-      });
+      const r = results[i];
+      const leg = legacyResults[i];
+      expect(r.s / leg.s).to.be.closeTo(1, eps, `s: ${i}`);
+      expect(r.a / leg.a).to.be.closeTo(1, eps, `a: ${i}`);
+
+      // Within 0.1% is OK.
+      expect(r.omegaM / leg.OmegaMatterT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omegaLambda / leg.OmegaLambdaT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.t / leg.Tnow).to.be.closeTo(1, 0.1 / 100);
+
+      if (i === 6) {
+        expect(r.z).to.be.closeTo(leg.z, eps, `z: ${i}`);
+        expect(r.Vnow).to.be.closeTo(leg.Vnow, 1e-12, `Vnow: ${i}`);
+        expect(r.d).to.be.closeTo(leg.Dnow, 1e-12);
+        expect(r.dEmit).to.be.closeTo(leg.Dthen, 1e-12);
+        continue;
+      }
+
+      expect(r.z / (leg.z + 0.001)).to.be.closeTo(1, Number.EPSILON, `z: ${i}`);
+      expect(r.Vnow / leg.Vnow).to.be.closeTo(1, 0.2 / 100, `Vnow: ${i}`);
+      expect(r.d / leg.Dnow).to.be.closeTo(1, 0.2 / 100, `d: ${i}`);
+      expect(r.dEmit / leg.Dthen).to.be.closeTo(1, 0.2 / 100, `dEmit: ${i}`);
+
+      // expect(r.Vnow / leg.Vthen).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.Y).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.Dhor).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.XDpar).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.Dpar).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.H_t).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.rhocrit).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
+      // expect(r.Vnow / leg.OmegaTotalT).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
     }
   });
 });

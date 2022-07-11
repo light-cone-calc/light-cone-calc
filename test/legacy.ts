@@ -45,7 +45,7 @@ export const convertLegacyInputs = (
     // Yinf,
     zeq: s_eq - 1,
     omega: Omega,
-    omegalambda: OmegaL,
+    omegaLambda0: OmegaL,
     // The legacy code passes Ynow = 978 / H_0.
     h0: H0GYr * 978,
     stretch: [s_upper, s_lower],

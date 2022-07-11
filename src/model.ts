@@ -1,5 +1,7 @@
 // cosmic-expansion/src/model.ts
-
+/**
+ * H(s)^2 = H_0^2 (\Omega_m s^3 + \Omega_{rad} s^4 + \Omega_\Lambda s^{3(1+w)} + \Omega_k s^2 )
+ */
 export type LcdmModel = {
   /** Temperature of the cosmic microwave background radiation (K). */
   cmbtemperature: number;
@@ -14,18 +16,17 @@ export type LcdmModel = {
   kmsmpscToGyr: number;
 
   H0GYr: number;
-  getHAtStretch: (s: number) => number;
+  getESquaredAtStretch: (s: number) => number;
   getParamsAtStretch: (s: number) => LcdmModelVariables;
 };
 
 type LcdmModelVariables = {
-  hPerGyr: number;
-  OmegaMatterT: number;
-  OmegaLambdaT: number;
-  OmegaRadiationT: number;
-  TemperatureT: number;
-  rhocrit: number;
-  OmegaTotalT: number;
+  h: number;
+  omegaM: number;
+  omegaLambda: number;
+  omegaRad: number;
+  temperature: number;
+  rhoCrit: number;
 };
 
 export const physicalConstants = {
@@ -74,21 +75,21 @@ const surveys = {
   // Parameters from the Planck 2018 survey - are these the right ones?
   planck2018: {
     h0: 67.66,
-    omegalambda: 0.6889,
+    omegaLambda0: 0.6889,
     zeq: 3387,
     omega: 1,
   },
   // Parameters from the Planck 2015 survey - unverified.
   planck2015: {
     h0: 67.74,
-    omegalambda: 0.691,
+    omegaLambda0: 0.691,
     zeq: 3370,
     omega: 1,
   },
   // Parameters from the WMAP 2013 survey - unverified.
   wmap2013: {
     h0: 69.8,
-    omegalambda: 0.72,
+    omegaLambda0: 0.72,
     zeq: 3300,
     omega: 1,
   },
@@ -103,7 +104,7 @@ export interface LcdmModelParameters {
   /** Total density paramater \\( \Omega_{tot} \\). */
   omega?: number;
   /** Dark energy density parameter \\( \Omega_\Lambda \\). */
-  omegalambda?: number;
+  omegaLambda0?: number;
   /** Redshift when matter and radiation densities were equal \\( z_{eq} \\). */
   zeq?: number;
   cmbtemperature?: number;
@@ -123,7 +124,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
     kmsmpscToGyr,
     h0,
     omega,
-    omegalambda,
+    omegaLambda0,
     zeq,
     cmbtemperature,
     gyrToSeconds,
@@ -138,12 +139,12 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
   const H0GYr = h0 * kmsmpscToGyr;
   const seq = zeq + 1;
 
-  // const rhocritNow = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
+  // const rhocrit = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
 
-  const OmegaM = ((omega - omegalambda) * seq) / (seq + 1); // Energy density of matter
-  const OmegaR = OmegaM / seq; // Energy density of radiation
+  const omegaM0 = ((omega - omegaLambda0) * seq) / (seq + 1); // Energy density of matter
+  const omegaRad0 = omegaM0 / seq; // Energy density of radiation
 
-  const OmegaK = 1 - OmegaM - OmegaR - omegalambda; // Curvature energy density
+  const OmegaK = 1 - omegaM0 - omegaRad0 - omegaLambda0; // Curvature energy density
 
   /**
    * Hubble constant as a function of stretch.
@@ -151,30 +152,28 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
    * @param s stretch = 1/a, where a is the usual FLRW scale factor.
    * @returns The Hubble constant at stretch s.
    */
-  const getHAtStretch = (s: number) => {
+  const getESquaredAtStretch = (s: number) => {
     const s2 = s * s;
-    return (
-      H0GYr *
-      Math.sqrt(omegalambda + OmegaK * s2 + OmegaM * s2 * s + OmegaR * s2 * s2)
-    );
+    return omegaLambda0 + OmegaK * s2 + omegaM0 * s2 * s + omegaRad0 * s2 * s2;
   };
 
   const getParamsAtStretch = (s: number): LcdmModelVariables => {
-    const hPerGyr = getHAtStretch(s);
+    const eSquared = getESquaredAtStretch(s);
     const s2 = s * s;
-    // const hFactor = (H_0 / H_t) ** 2;
-    const hFactor = (H0GYr / hPerGyr) ** 2;
-    const OmegaMatterT = (omega - omegalambda) * s2 * s * hFactor;
-    const OmegaLambdaT = omegalambda * hFactor;
-    const OmegaRadiationT = (OmegaMatterT * s) / seq;
+    // ## \Omega_m = H*2 / H_0^2 / s^3 ##.
+    const omegaM = (omegaM0 * s2 * s) / eSquared;
+    const omegaLambda = omegaLambda0 / eSquared;
+    const omegaRad = (omegaRad0 * s2 * s2) / eSquared;
+    const h0Squared =
+      (h0 * h0 * kmsmpscToGyr * kmsmpscToGyr) / (gyrToSeconds * gyrToSeconds);
+    const h = h0 * Math.sqrt(eSquared);
     return {
-      hPerGyr,
-      OmegaMatterT,
-      OmegaLambdaT,
-      OmegaRadiationT,
-      TemperatureT: cmbtemperature * s,
-      rhocrit: rhoConst * (hPerGyr / gyrToSeconds) ** 2,
-      OmegaTotalT: OmegaMatterT + OmegaLambdaT + OmegaRadiationT,
+      h,
+      omegaM,
+      omegaLambda,
+      omegaRad,
+      temperature: cmbtemperature * s,
+      rhoCrit: rhoConst * h0Squared * omega,
     };
   };
 
@@ -184,7 +183,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
     gyrToSeconds,
     kmsmpscToGyr,
     H0GYr,
-    getHAtStretch,
+    getESquaredAtStretch,
     getParamsAtStretch,
   };
 };

@@ -20,9 +20,9 @@ describe('Expansion calculations', function () {
     // (13.8Gy since big bang).
 
     expect(now.z).to.equal(0);
-    expect(now.Tnow).to.be.closeTo(t0, 0.0005);
-    expect(now.Dnow).to.equal(0);
-    expect(now.Dthen).to.equal(0);
+    expect(now.t).to.be.closeTo(t0, 0.0005);
+    expect(now.d).to.equal(0);
+    expect(now.dEmit).to.equal(0);
     expect(now.XDpar).to.equal(1);
     expect(now.Vnow).to.equal(0);
     expect(now.Vthen).to.equal(0);
@@ -34,7 +34,7 @@ describe('Expansion calculations', function () {
     // expect(atSeparation.Dnow / 45.35442113146).to.be.closeTo(1, 1e-5);
     // expect(atSeparation.Dthen).to.be.closeTo(rstar, 1e-5);
     // expect(result.Dhor / 5.673735574007e-2).to.be.closeTo(1, 1e-6);
-    // expect(atSeparation.Tnow / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
+    // expect(atSeparation.t / 3.71973267559e-4).to.be.closeTo(1, 1e-3);
   });
 
   it('should calculate expansion for values close to s = 1', function () {
@@ -49,17 +49,27 @@ describe('Expansion calculations', function () {
 
     // Values taken from
     // https://www.physicsforums.com/threads/a-glitch-in-jorries-cosmo-calculator.1014779/post-6632672
-    expect(results[0].Dnow / 1.41004).to.be.closeTo(1, 1e-3);
-    expect(results[1].Dnow / 1.27214).to.be.closeTo(1, 1e-3);
-    expect(results[2].Dnow / 1.13354).to.be.closeTo(1, 1e-3);
-    expect(results[3].Dnow / 0.99426).to.be.closeTo(1, 1e-3);
-    expect(results[4].Dnow / 0.85427).to.be.closeTo(1, 1e-3);
-    expect(results[5].Dnow / 0.7136).to.be.closeTo(1, 1e-3);
-    expect(results[6].Dnow / 0.57225).to.be.closeTo(1, 1e-3);
-    expect(results[7].Dnow / 0.43023).to.be.closeTo(1, 1e-3);
-    expect(results[8].Dnow / 0.28748).to.be.closeTo(1, 1e-3);
-    expect(results[9].Dnow / 0.14408).to.be.closeTo(1, 1e-3);
-
-    expect(results[20].Dnow / 1.47679).to.be.closeTo(1, 1e-3);
+    const tol = 0.001;
+    expect(results[0].d).to.be.closeTo(1.41004, tol);
+    expect(results[1].d).to.be.closeTo(1.27214, tol);
+    expect(results[2].d).to.be.closeTo(1.13354, tol);
+    expect(results[3].d).to.be.closeTo(0.99426, tol);
+    expect(results[4].d).to.be.closeTo(0.85427, tol);
+    expect(results[5].d).to.be.closeTo(0.7136, tol);
+    expect(results[6].d).to.be.closeTo(0.57225, tol);
+    expect(results[7].d).to.be.closeTo(0.43023, tol);
+    expect(results[8].d).to.be.closeTo(0.28748, tol);
+    expect(results[9].d).to.be.closeTo(0.14408, tol);
+    expect(results[10].d).to.equal(0);
+    expect(results[11].d).to.be.closeTo(0.14474, tol);
+    expect(results[12].d).to.be.closeTo(0.29015, tol);
+    expect(results[13].d).to.be.closeTo(0.43623, tol);
+    expect(results[14].d).to.be.closeTo(0.58295, tol);
+    expect(results[15].d).to.be.closeTo(0.73032, tol);
+    expect(results[16].d).to.be.closeTo(0.87834, tol);
+    expect(results[17].d).to.be.closeTo(1.02699, tol);
+    expect(results[18].d).to.be.closeTo(1.17631, tol * 2);
+    expect(results[19].d).to.be.closeTo(1.32623, tol * 2);
+    expect(results[20].d).to.be.closeTo(1.47679, tol * 2);
   });
 });

@@ -19,8 +19,8 @@ export interface ExpansionInputs extends LcdmModelParameters {
 
 type IntegrationResult = {
   s: number;
-  tNow: number;
-  dNow: number;
+  t: number;
+  d: number;
   // dHor: number;
   dPar: number;
 };
@@ -40,33 +40,35 @@ export type ExpansionResult = {
   /** Recession rate at this redshift when the light was emitted \\( c = 1 \\). */
   Vthen: number;
   /** Time since the end of inflation \\( GYr \\). */
-  Tnow: number;
+  t: number;
   Y: number;
   /** Proper distance of a source observed at this redshift \\( GYr \\). */
-  Dnow: number;
+  d: number;
   /** Proper distance at this redshift when the light was emitted \\( GYr \\). */
-  Dthen: number;
+  dEmit: number;
   Dhor: number;
   XDpar: number;
   Dpar: number;
-  hPerGyr: number; //H_t
+  /** Hubble parameter H in ## kms^{-1}Mpsc^{-1} ##. **/
+  h: number;
+  // @deprecate? hPerGyr: number; //H_t
   /** Matter fraction of the critical energy density \\( \rho_{crit}^{-1} \\). */
-  OmegaMatterT: number;
+  omegaM: number;
   /** Dark energy fraction of the critical density \\( \rho_{crit}^{-1} \\). */
-  OmegaLambdaT: number;
+  omegaLambda: number;
   /** Radiation density fraction of the critical density \\( \rho_{crit}^{-1} \\). */
-  OmegaRadiationT: number;
-  TemperatureT: number;
-  /** Critical density ??? */
-  rhocrit: number;
-  /** Total energy density fraction of the critical density \\( \rho_{crit}^{-1} \\). */
-  OmegaTotalT: number;
+  omegaRad: number;
+  temperature: number;
+  /** Critical density. */
+  rhoCrit: number;
 };
 
 const getFunctionsFromModel = (model: LcdmModel) => {
   return {
-    TH: (s: number): number => 1 / model.getHAtStretch(s),
-    THs: (s: number): number => 1 / (s * model.getHAtStretch(s)),
+    TH: (s: number): number =>
+      1 / (model.H0GYr * Math.sqrt(model.getESquaredAtStretch(s))),
+    THs: (s: number): number =>
+      1 / (s * model.H0GYr * Math.sqrt(model.getESquaredAtStretch(s))),
   };
 };
 
@@ -124,16 +126,14 @@ const calculateExpansionForStretchValues = (
   let th = 0;
   let ths = 0;
   for (let i = 0; i < sPoints.length - (isInfinityIncluded ? 0 : 1); ++i) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // ts-ignore
     th += thPoints[i][0];
     ths += thsPoints[i][0];
     const s = sPoints[i];
 
     results.push({
       s,
-      tNow: thsAtInfinity - ths,
-      dNow: Math.abs(th - thAtOne),
+      t: thsAtInfinity - ths,
+      d: Math.abs(th - thAtOne),
       dPar: (thAtInfinity - th) / s,
     });
   }
@@ -150,51 +150,37 @@ const createExpansionResults = (
   const results: ExpansionResult[] = [];
 
   for (let i = integrationResults.length - 1; i >= 0; --i) {
-    const { s, tNow, dNow, dPar } = integrationResults[i];
+    const { s, t, d: dUnsafe, dPar } = integrationResults[i];
 
     const params = model.getParamsAtStretch(s);
-    const {
-      // H_t,
-      OmegaMatterT,
-      OmegaLambdaT,
-      OmegaRadiationT,
-      TemperatureT,
-      rhocrit,
-      OmegaTotalT,
-    } = params;
+    const hPerGyr = params.h * model.kmsmpscToGyr;
 
     const z = s - 1;
-    // Force Dnow to zero at zero redshift.
-    const Dnow = z === 0 ? 0 : dNow;
+    // Force d to zero at zero redshift.
+    const d = z === 0 ? 0 : dUnsafe;
     // Current radius = ## \integral_0^s TH(s) ##.
-    const Dthen = Dnow / s;
+    const dEmit = d / s;
     const a = 1 / s;
-    const hPerGyr = model.getHAtStretch(s);
 
     results.push({
       z,
       a,
-      s, // Stretch.
-      Tnow: tNow,
-      // R
-      Dnow,
-      Dthen,
+      s,
+      t,
+      d,
+      dEmit,
+
+      ...params,
+
       Dhor: 1 / hPerGyr,
       Dpar: dPar,
       // XDpar seems to be reported as Vgen.
       XDpar: (a * hPerGyr) / model.H0GYr,
-      Vnow: Dnow * model.H0GYr,
-      Vthen: Dthen * hPerGyr,
+      Vnow: d * model.H0GYr,
+      Vthen: dEmit * hPerGyr,
       // The legacy test says we don't want to convert.
       // H_t: H_t / model.convertToGyr,
-      hPerGyr,
       Y: 1 / hPerGyr,
-      TemperatureT,
-      rhocrit,
-      OmegaMatterT,
-      OmegaLambdaT,
-      OmegaRadiationT,
-      OmegaTotalT,
     });
   }
 
@@ -209,8 +195,8 @@ const createExpansionResults = (
  */
 const calculateAge = (inputs: ExpansionInputs): number => {
   // Do the integration.
-  const { tNow } = calculateExpansionForStretchValues([1], inputs)[0];
-  return tNow;
+  const { t } = calculateExpansionForStretchValues([1], inputs)[0];
+  return t;
 };
 
 /**
