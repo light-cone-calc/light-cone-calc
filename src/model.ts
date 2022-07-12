@@ -78,21 +78,21 @@ const surveys = {
     h0: 67.66,
     omegaLambda0: 0.6889,
     zeq: 3387,
-    omega: 1,
+    omega0: 1,
   },
   // Parameters from the Planck 2015 survey - unverified.
   planck2015: {
     h0: 67.74,
     omegaLambda0: 0.691,
     zeq: 3370,
-    omega: 1,
+    omega0: 1,
   },
   // Parameters from the WMAP 2013 survey - unverified.
   wmap2013: {
     h0: 69.8,
     omegaLambda0: 0.72,
     zeq: 3300,
-    omega: 1,
+    omega0: 1,
   },
 };
 
@@ -103,7 +103,7 @@ export interface LcdmModelParameters {
   /** Hubble constant \\( H_0 \\) (in km/s/Mpsc). */
   h0?: number;
   /** Total density paramater \\( \Omega_{tot} \\). */
-  omega?: number;
+  omega0?: number;
   /** Dark energy density parameter \\( \Omega_\Lambda \\). */
   omegaLambda0?: number;
   /** Redshift when matter and radiation densities were equal \\( z_{eq} \\). */
@@ -124,7 +124,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
   const {
     kmsmpscToGyr,
     h0,
-    omega,
+    omega0,
     omegaLambda0,
     zeq,
     cmbTemperature,
@@ -143,7 +143,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
 
   // Calculate current density parameters.
   const rhoCrit0 = rhoConst * h0Seconds * h0Seconds;
-  const omegaM0 = ((omega - omegaLambda0) * seq) / (seq + 1);
+  const omegaM0 = ((omega0 - omegaLambda0) * seq) / (seq + 1);
   const omegaRad0 = omegaM0 / seq;
   const OmegaK0 = 1 - omegaM0 - omegaRad0 - omegaLambda0;
 
