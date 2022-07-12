@@ -38,7 +38,7 @@ export type ExpansionResult = {
   /** Recession rate of a source observed at this redshift \\( c = 1 \\). */
   vNow: number;
   /** Recession rate at this redshift when the light was emitted \\( c = 1 \\). */
-  Vthen: number;
+  vThen: number;
   /** Time since the end of inflation \\( GYr \\). */
   t: number;
   Y: number;
@@ -177,7 +177,7 @@ const createExpansionResults = (
       // XDpar seems to be reported as Vgen.
       XDpar: (a * hPerGyr) / model.h0Gy,
       vNow: d * model.h0Gy,
-      Vthen: dEmit * hPerGyr,
+      vThen: dEmit * hPerGyr,
       // The legacy test says we don't want to convert.
       // H_t: H_t / model.convertToGyr,
       Y: 1 / hPerGyr,

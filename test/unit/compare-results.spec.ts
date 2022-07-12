@@ -29,10 +29,10 @@ const getLegacyInputs = () => {
  * Dnow: 3.552713678800501e-15
  * Dthen: 3.552713678800501e-15
  * Vnow: 2.460744627831758e-16
- * Vthen: 2.4607446278317573e-16
+ * vThen: 2.4607446278317573e-16
  */
 describe('Fix to omegaM0 calculation in v1.8.2', function () {
-  it('Dnow, Dthen, v and Vthen should all be 0 for z = 0', function () {
+  it('Dnow, Dthen, v and vThen should all be 0 for z = 0', function () {
     const currentResults = Calculate(getLegacyInputs());
 
     let found = false;
@@ -43,7 +43,7 @@ describe('Fix to omegaM0 calculation in v1.8.2', function () {
       expect(current.d).to.equal(0);
       expect(current.dEmit).to.equal(0);
       expect(current.vNow).to.equal(0);
-      expect(current.Vthen).to.equal(0);
+      expect(current.vThen).to.equal(0);
     });
     expect(found).to.be.true;
   });
