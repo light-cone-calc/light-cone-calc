@@ -68,21 +68,21 @@ describe('Performance vs legacy calculations', function () {
       expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
       expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
       expect(r.t / leg.Tnow).to.be.closeTo(1, 0.1 / 100);
+      // expect(r.Vthen / leg.Vthen).to.be.closeTo(1, 1e-5);
 
       if (i === 6) {
         expect(r.z).to.be.closeTo(leg.z, eps, `z: ${i}`);
-        expect(r.Vnow).to.be.closeTo(leg.Vnow, 1e-12, `Vnow: ${i}`);
+        expect(r.vNow).to.be.closeTo(leg.Vnow, 1e-12, `Vnow: ${i}`);
         expect(r.d).to.be.closeTo(leg.Dnow, 1e-12);
         expect(r.dEmit).to.be.closeTo(leg.Dthen, 1e-12);
         continue;
       }
 
       expect(r.z / (leg.z + 0.001)).to.be.closeTo(1, Number.EPSILON, `z: ${i}`);
-      expect(r.Vnow / leg.Vnow).to.be.closeTo(1, 0.2 / 100, `Vnow: ${i}`);
+      expect(r.vNow / leg.Vnow).to.be.closeTo(1, 0.2 / 100, `Vnow: ${i}`);
       expect(r.d / leg.Dnow).to.be.closeTo(1, 0.2 / 100, `d: ${i}`);
       expect(r.dEmit / leg.Dthen).to.be.closeTo(1, 0.2 / 100, `dEmit: ${i}`);
 
-      // expect(r.Vnow / leg.Vthen).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
       // expect(r.Vnow / leg.Y).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
       // expect(r.Vnow / leg.Dhor).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
       // expect(r.Vnow / leg.XDpar).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);

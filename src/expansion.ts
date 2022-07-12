@@ -36,7 +36,7 @@ export type ExpansionResult = {
   /** Redshift. */
   z: number;
   /** Recession rate of a source observed at this redshift \\( c = 1 \\). */
-  Vnow: number;
+  vNow: number;
   /** Recession rate at this redshift when the light was emitted \\( c = 1 \\). */
   Vthen: number;
   /** Time since the end of inflation \\( GYr \\). */
@@ -66,9 +66,9 @@ export type ExpansionResult = {
 const getFunctionsFromModel = (model: LcdmModel) => {
   return {
     TH: (s: number): number =>
-      1 / (model.H0GYr * Math.sqrt(model.getESquaredAtStretch(s))),
+      1 / (model.h0Gy * Math.sqrt(model.getESquaredAtStretch(s))),
     THs: (s: number): number =>
-      1 / (s * model.H0GYr * Math.sqrt(model.getESquaredAtStretch(s))),
+      1 / (s * model.h0Gy * Math.sqrt(model.getESquaredAtStretch(s))),
   };
 };
 
@@ -175,8 +175,8 @@ const createExpansionResults = (
       Dhor: 1 / hPerGyr,
       Dpar: dPar,
       // XDpar seems to be reported as Vgen.
-      XDpar: (a * hPerGyr) / model.H0GYr,
-      Vnow: d * model.H0GYr,
+      XDpar: (a * hPerGyr) / model.h0Gy,
+      vNow: d * model.h0Gy,
       Vthen: dEmit * hPerGyr,
       // The legacy test says we don't want to convert.
       // H_t: H_t / model.convertToGyr,

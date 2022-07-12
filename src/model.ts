@@ -4,7 +4,7 @@
  */
 export type LcdmModel = {
   /** Temperature of the cosmic microwave background radiation (K). */
-  cmbtemperature: number;
+  cmbTemperature: number;
 
   /** $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$ */
   rhoConst: number;
@@ -15,7 +15,8 @@ export type LcdmModel = {
   /** Conversion factor for the Hubble parameter. */
   kmsmpscToGyr: number;
 
-  H0GYr: number;
+  h0: number;
+  h0Gy: number;
   getESquaredAtStretch: (s: number) => number;
   getParamsAtStretch: (s: number) => LcdmModelVariables;
 };
@@ -35,7 +36,7 @@ export const physicalConstants = {
    *
    * @todo Find reference.
    */
-  cmbtemperature: 2.72548,
+  cmbTemperature: 2.72548,
 
   /**
    * $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$
@@ -107,7 +108,7 @@ export interface LcdmModelParameters {
   omegaLambda0?: number;
   /** Redshift when matter and radiation densities were equal \\( z_{eq} \\). */
   zeq?: number;
-  cmbtemperature?: number;
+  cmbTemperature?: number;
   // Conversion: multiply (a hubble factor) km/s/Mpsc to get years * 10^9.
   kmsmpscToGyr?: number;
   // Conversion: multiply years * 10^9 to get seconds.
@@ -126,7 +127,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
     omega,
     omegaLambda0,
     zeq,
-    cmbtemperature,
+    cmbTemperature,
     gyrToSeconds,
 
     rhoConst,
@@ -136,7 +137,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
     ...options,
   };
 
-  const H0GYr = h0 * kmsmpscToGyr;
+  const h0Gy = h0 * kmsmpscToGyr;
   const seq = zeq + 1;
 
   // const rhocrit = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
@@ -172,17 +173,18 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
       omegaM,
       omegaLambda,
       omegaRad,
-      temperature: cmbtemperature * s,
+      temperature: cmbTemperature * s,
       rhoCrit: rhoConst * h0Squared * omega,
     };
   };
 
   return {
-    cmbtemperature,
+    cmbTemperature,
     rhoConst,
     gyrToSeconds,
     kmsmpscToGyr,
-    H0GYr,
+    h0,
+    h0Gy,
     getESquaredAtStretch,
     getParamsAtStretch,
   };

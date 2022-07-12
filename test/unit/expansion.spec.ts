@@ -24,7 +24,7 @@ describe('Expansion calculations', function () {
     expect(now.d).to.equal(0);
     expect(now.dEmit).to.equal(0);
     expect(now.XDpar).to.equal(1);
-    expect(now.Vnow).to.equal(0);
+    expect(now.vNow).to.equal(0);
     expect(now.Vthen).to.equal(0);
 
     expect(atSeparation.z).to.equal(zstar);
