@@ -161,10 +161,10 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
   const getParamsAtStretch = (s: number): LcdmModelVariables => {
     const eSquared = getESquaredAtStretch(s);
     const s2 = s * s;
+    const h = h0 * Math.sqrt(eSquared);
     const omegaM = (omegaM0 * s2 * s) / eSquared;
     const omegaLambda = omegaLambda0 / eSquared;
     const omegaRad = (omegaRad0 * s2 * s2) / eSquared;
-    const h = h0 * Math.sqrt(eSquared);
     return {
       h,
       omegaM,

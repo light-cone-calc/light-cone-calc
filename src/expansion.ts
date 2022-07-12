@@ -20,7 +20,7 @@ export interface ExpansionInputs extends LcdmModelParameters {
 type IntegrationResult = {
   s: number;
   t: number;
-  d: number;
+  dNow: number;
   // r: number;
   dPar: number;
 };
@@ -35,22 +35,27 @@ export type ExpansionResult = {
   a: number;
   /** Redshift. */
   z: number;
-  /** Recession rate of a source observed at this redshift \\( c = 1 \\). */
-  vNow: number;
-  /** Recession rate at this redshift when the light was emitted \\( c = 1 \\). */
-  vThen: number;
-  /** Time since the end of inflation \\( GYr \\). */
-  t: number;
-  /** Proper distance of a source observed at this redshift \\( GYr \\). */
-  d: number;
-  /** Proper distance at this redshift when the light was emitted \\( GYr \\). */
-  dEmit: number;
-  r: number;
-  vGen: number;
-  dPar: number;
-  /** Hubble parameter H in ## kms^{-1}Mpsc^{-1} ##. **/
+  /** Hubble parameter \\( kms^{-1}Mpsc^{-1} \\). */
   h: number;
-  // @deprecate? hPerGyr: number; //H_t
+  /** Time (Gy). */
+  t: number;
+
+  /** Hubble radius (Gly). */
+  r: number;
+  /** Proper distance of a source observed at this redshift (Gly). */
+  dNow: number;
+  /** Proper distance at this redshift when the light was emitted (Gly). */
+  d: number;
+  /** Particle horizon (Gly) */
+  dPar: number;
+
+  /** Recession rate of a source observed at this redshift (c = 1). */
+  vNow: number;
+  /** Recession rate at this redshift when the light was emitted (c = 1). */
+  vThen: number;
+  /** @todo document this! */
+  vGen: number;
+
   /** Matter fraction of the critical energy density \\( \rho_{crit}^{-1} \\). */
   omegaM: number;
   /** Dark energy fraction of the critical density \\( \rho_{crit}^{-1} \\). */
@@ -58,6 +63,7 @@ export type ExpansionResult = {
   /** Radiation density fraction of the critical density \\( \rho_{crit}^{-1} \\). */
   omegaRad: number;
   temperature: number;
+
   /** Critical density. */
   rhoCrit: number;
 };
@@ -131,7 +137,7 @@ const calculateExpansionForStretchValues = (
     results.push({
       s,
       t: (thsAtInfinity - ths) / model.h0Gy,
-      d: Math.abs(th - thAtOne) / model.h0Gy,
+      dNow: Math.abs(th - thAtOne) / model.h0Gy,
       dPar: (thAtInfinity - th) / s / model.h0Gy,
     });
   }
@@ -148,16 +154,16 @@ const createExpansionResults = (
   const results: ExpansionResult[] = [];
 
   for (let i = integrationResults.length - 1; i >= 0; --i) {
-    const { s, t, d: dUnsafe, dPar } = integrationResults[i];
+    const { s, t, dNow: dUnsafe, dPar } = integrationResults[i];
 
     const params = model.getParamsAtStretch(s);
     const hPerGyr = params.h * model.kmsmpscToGyr;
 
     const z = s - 1;
-    // Force d to zero at zero redshift.
-    const d = z === 0 ? 0 : dUnsafe;
+    // Force dNow to zero at zero redshift.
+    const dNow = z === 0 ? 0 : dUnsafe;
     // Current radius = ## \integral_0^s TH(s) ##.
-    const dEmit = d / s;
+    const d = dNow / s;
     const a = 1 / s;
 
     results.push({
@@ -165,13 +171,13 @@ const createExpansionResults = (
       a,
       s,
       t,
+      dNow,
       d,
-      dEmit,
       r: 1 / hPerGyr,
       dPar: dPar,
       vGen: (a * hPerGyr) / model.h0Gy,
-      vNow: d * model.h0Gy,
-      vThen: dEmit * hPerGyr,
+      vNow: dNow * model.h0Gy,
+      vThen: d * hPerGyr,
       ...params,
     });
   }

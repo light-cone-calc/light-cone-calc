@@ -21,8 +21,8 @@ describe('Expansion calculations', function () {
 
     expect(now.z).to.equal(0);
     expect(now.t).to.be.closeTo(t0, 0.0005);
+    expect(now.dNow).to.equal(0);
     expect(now.d).to.equal(0);
-    expect(now.dEmit).to.equal(0);
     expect(now.vGen).to.equal(1);
     expect(now.vNow).to.equal(0);
     expect(now.vThen).to.equal(0);
@@ -50,26 +50,26 @@ describe('Expansion calculations', function () {
     // Values taken from
     // https://www.physicsforums.com/threads/a-glitch-in-jorries-cosmo-calculator.1014779/post-6632672
     const tol = 0.001;
-    expect(results[0].d).to.be.closeTo(1.41004, tol);
-    expect(results[1].d).to.be.closeTo(1.27214, tol);
-    expect(results[2].d).to.be.closeTo(1.13354, tol);
-    expect(results[3].d).to.be.closeTo(0.99426, tol);
-    expect(results[4].d).to.be.closeTo(0.85427, tol);
-    expect(results[5].d).to.be.closeTo(0.7136, tol);
-    expect(results[6].d).to.be.closeTo(0.57225, tol);
-    expect(results[7].d).to.be.closeTo(0.43023, tol);
-    expect(results[8].d).to.be.closeTo(0.28748, tol);
-    expect(results[9].d).to.be.closeTo(0.14408, tol);
-    expect(results[10].d).to.equal(0);
-    expect(results[11].d).to.be.closeTo(0.14474, tol);
-    expect(results[12].d).to.be.closeTo(0.29015, tol);
-    expect(results[13].d).to.be.closeTo(0.43623, tol);
-    expect(results[14].d).to.be.closeTo(0.58295, tol);
-    expect(results[15].d).to.be.closeTo(0.73032, tol);
-    expect(results[16].d).to.be.closeTo(0.87834, tol);
-    expect(results[17].d).to.be.closeTo(1.02699, tol);
-    expect(results[18].d).to.be.closeTo(1.17631, tol * 2);
-    expect(results[19].d).to.be.closeTo(1.32623, tol * 2);
-    expect(results[20].d).to.be.closeTo(1.47679, tol * 2);
+    expect(results[0].dNow).to.be.closeTo(1.41004, tol);
+    expect(results[1].dNow).to.be.closeTo(1.27214, tol);
+    expect(results[2].dNow).to.be.closeTo(1.13354, tol);
+    expect(results[3].dNow).to.be.closeTo(0.99426, tol);
+    expect(results[4].dNow).to.be.closeTo(0.85427, tol);
+    expect(results[5].dNow).to.be.closeTo(0.7136, tol);
+    expect(results[6].dNow).to.be.closeTo(0.57225, tol);
+    expect(results[7].dNow).to.be.closeTo(0.43023, tol);
+    expect(results[8].dNow).to.be.closeTo(0.28748, tol);
+    expect(results[9].dNow).to.be.closeTo(0.14408, tol);
+    expect(results[10].dNow).to.equal(0);
+    expect(results[11].dNow).to.be.closeTo(0.14474, tol);
+    expect(results[12].dNow).to.be.closeTo(0.29015, tol);
+    expect(results[13].dNow).to.be.closeTo(0.43623, tol);
+    expect(results[14].dNow).to.be.closeTo(0.58295, tol);
+    expect(results[15].dNow).to.be.closeTo(0.73032, tol);
+    expect(results[16].dNow).to.be.closeTo(0.87834, tol);
+    expect(results[17].dNow).to.be.closeTo(1.02699, tol);
+    expect(results[18].dNow).to.be.closeTo(1.17631, tol * 2);
+    expect(results[19].dNow).to.be.closeTo(1.32623, tol * 2);
+    expect(results[20].dNow).to.be.closeTo(1.47679, tol * 2);
   });
 });

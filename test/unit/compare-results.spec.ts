@@ -40,8 +40,8 @@ describe('Fix to omegaM0 calculation in v1.8.2', function () {
       if (current.z !== 0) return;
       found = true;
       expect(current.z).to.equal(0);
+      expect(current.dNow).to.equal(0);
       expect(current.d).to.equal(0);
-      expect(current.dEmit).to.equal(0);
       expect(current.vNow).to.equal(0);
       expect(current.vThen).to.equal(0);
     });
