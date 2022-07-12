@@ -140,12 +140,12 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
   const h0Gy = h0 * kmsmpscToGyr;
   const seq = zeq + 1;
   const h0Seconds = (h0 * kmsmpscToGyr) / gyrToSeconds;
+
+  // Calculate current density parameters.
   const rhoCrit0 = rhoConst * h0Seconds * h0Seconds;
-
-  const omegaM0 = ((omega - omegaLambda0) * seq) / (seq + 1); // Energy density of matter
-  const omegaRad0 = omegaM0 / seq; // Energy density of radiation
-
-  const OmegaK = 1 - omegaM0 - omegaRad0 - omegaLambda0; // Curvature energy density
+  const omegaM0 = ((omega - omegaLambda0) * seq) / (seq + 1);
+  const omegaRad0 = omegaM0 / seq;
+  const OmegaK0 = 1 - omegaM0 - omegaRad0 - omegaLambda0;
 
   /**
    * Hubble constant as a function of stretch.
@@ -155,7 +155,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
    */
   const getESquaredAtStretch = (s: number) => {
     const s2 = s * s;
-    return omegaLambda0 + OmegaK * s2 + omegaM0 * s2 * s + omegaRad0 * s2 * s2;
+    return omegaLambda0 + OmegaK0 * s2 + omegaM0 * s2 * s + omegaRad0 * s2 * s2;
   };
 
   const getParamsAtStretch = (s: number): LcdmModelVariables => {
