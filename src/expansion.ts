@@ -66,7 +66,7 @@ const getFunctionsFromModel = (model: LcdmModel) => {
   return {
     TH: (s: number): number => 1 / Math.sqrt(model.getESquaredAtStretch(s)),
     THs: (s: number): number =>
-      1 / (s * model.h0Gy * Math.sqrt(model.getESquaredAtStretch(s))),
+      1 / (s * Math.sqrt(model.getESquaredAtStretch(s))),
   };
 };
 
@@ -130,7 +130,7 @@ const calculateExpansionForStretchValues = (
 
     results.push({
       s,
-      t: thsAtInfinity - ths,
+      t: (thsAtInfinity - ths) / model.h0Gy,
       d: Math.abs(th - thAtOne) / model.h0Gy,
       dPar: (thAtInfinity - th) / s / model.h0Gy,
     });

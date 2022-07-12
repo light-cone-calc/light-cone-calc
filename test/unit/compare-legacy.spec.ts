@@ -59,20 +59,18 @@ describe('Performance vs legacy calculations', function () {
     for (let i = 0; i < legacyResults.length; ++i) {
       const r = results[i];
       const leg = legacyResults[i];
+
       expect(r.s / leg.s).to.be.closeTo(1, eps, `s: ${i}`);
       expect(r.a / leg.a).to.be.closeTo(1, eps, `a: ${i}`);
-
-      // Within 0.1% is OK.
-      expect(r.omegaM / leg.OmegaMatterT).to.be.closeTo(1, 0.1 / 100);
-      expect(r.omegaLambda / leg.OmegaLambdaT).to.be.closeTo(1, 0.1 / 100);
-      expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
-      expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
+      // leg.z see below.
+      // leg.Vnow see below.
+      // leg.Vthen see below.
       expect(r.t / leg.Tnow).to.be.closeTo(1, 0.1 / 100);
-      expect(r.rhoCrit / leg.rhocrit).to.be.closeTo(1, 0.1 / 100);
-      expect(r.r / leg.Dhor).to.be.closeTo(1, 0.1 / 100);
       expect(leg.Y).to.equal(leg.Dhor);
-      expect(1 / r.r / leg.H_t).to.be.closeTo(1, 0.1 / 100);
-
+      // leg.Dnow see below.
+      // leg.Dthen see below.
+      expect(r.r / leg.Dhor).to.be.closeTo(1, 0.1 / 100);
+      expect(r.vGen / leg.XDpar).to.be.closeTo(1, 0.1 / 100);
       // dPar inaccurate in LightCone7 due to integration method.
       if (i < 2) {
         expect(r.dPar / leg.Dpar).to.be.closeTo(1, 2 / 100);
@@ -81,9 +79,12 @@ describe('Performance vs legacy calculations', function () {
       } else {
         expect(r.dPar / leg.Dpar).to.be.closeTo(1, 0.1 / 100);
       }
-
-      expect(r.vGen / leg.XDpar).to.be.closeTo(1, 0.1 / 100);
-
+      expect(1 / r.r / leg.H_t).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omegaM / leg.OmegaMatterT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omegaLambda / leg.OmegaLambdaT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.rhoCrit / leg.rhocrit).to.be.closeTo(1, 0.1 / 100);
       const omegaTot = r.omegaM + r.omegaRad + r.omegaLambda;
       expect(omegaTot / leg.OmegaTotalT).to.be.closeTo(1, 0.1 / 100);
 
