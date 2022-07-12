@@ -1,7 +1,7 @@
 // cosmic-expansion/src/expansion.ts
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import type { LcdmModel, LcdmModelParameters } from './model';
+import type { LcdmModelParameters } from './model';
 
 import { numerical } from '@rec-math/math';
 
@@ -68,14 +68,6 @@ export type ExpansionResult = {
   rhoCrit: number;
 };
 
-const getFunctionsFromModel = (model: LcdmModel) => {
-  return {
-    TH: (s: number): number => 1 / Math.sqrt(model.getESquaredAtStretch(s)),
-    THs: (s: number): number =>
-      1 / (s * Math.sqrt(model.getESquaredAtStretch(s))),
-  };
-};
-
 /**
  * Get a list of cosmic expansion results for a range of stretch values.
  *
@@ -102,7 +94,7 @@ const calculateExpansionForStretchValues = (
 
   // Create a model for calculating the Hubble factor at a given stretch.
   const model = createLcdmModel(inputs);
-  const { TH, THs } = getFunctionsFromModel(model);
+  const { TH, THs } = model.getIntegralFunctions();
 
   const options = { epsilon: 1e-8 };
 
@@ -126,6 +118,7 @@ const calculateExpansionForStretchValues = (
 
   // Discard the initial zero start point.
   sPoints.shift();
+  const { h0Gy } = model.props;
 
   let th = 0;
   let ths = 0;
@@ -136,9 +129,9 @@ const calculateExpansionForStretchValues = (
 
     results.push({
       s,
-      t: (thsAtInfinity - ths) / model.h0Gy,
-      dNow: Math.abs(th - thAtOne) / model.h0Gy,
-      dPar: (thAtInfinity - th) / s / model.h0Gy,
+      t: (thsAtInfinity - ths) / h0Gy,
+      dNow: Math.abs(th - thAtOne) / h0Gy,
+      dPar: (thAtInfinity - th) / s / h0Gy,
     });
   }
 
@@ -150,6 +143,7 @@ const createExpansionResults = (
   inputs: ExpansionInputs
 ): ExpansionResult[] => {
   const model = createLcdmModel(inputs);
+  const { h0, h0Gy, kmsmpscToGyr } = model.props;
 
   const results: ExpansionResult[] = [];
 
@@ -157,11 +151,10 @@ const createExpansionResults = (
     const { s, t, dNow: dUnsafe, dPar } = integrationResults[i];
 
     const params = model.getParamsAtStretch(s);
-    const hGy = params.h * model.kmsmpscToGyr;
+    const hGy = params.h * kmsmpscToGyr;
 
     // Force dNow to zero at zero redshift.
     const dNow = s === 1 ? 0 : dUnsafe;
-
     results.push({
       z: s - 1,
       a: 1 / s,
@@ -171,8 +164,8 @@ const createExpansionResults = (
       d: dNow / s,
       r: 1 / hGy,
       dPar,
-      vGen: params.h / (s * model.h0),
-      vNow: dNow * model.h0Gy,
+      vGen: params.h / (s * h0),
+      vNow: dNow * h0Gy,
       v: (dNow * hGy) / s,
       ...params,
     });

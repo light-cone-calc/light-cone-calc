@@ -1,4 +1,5 @@
 // cosmic-expansion/src/model.ts
+
 /**
  * H(s)^2 = H_0^2 (\Omega_m s^3 + \Omega_{rad} s^4 + \Omega_\Lambda s^{3(1+w)} + \Omega_k s^2 )
  */
@@ -64,6 +65,13 @@ export const physicalConstants = {
   kmsmpscToGyr: 1.022712165045695e-3,
 };
 
+type CosmicExpansionSurvey = {
+  h0: number;
+  omegaLambda0: number;
+  zeq: number;
+  omega0: number;
+};
+
 /**
  * Parameters from the Planck 2018 survey.
  *
@@ -72,7 +80,7 @@ export const physicalConstants = {
  * @todo Verify Planck 2015 parameters.
  * @todo Verify WMAP 2013 parameters.
  */
-const surveys = {
+const surveys: Record<string, CosmicExpansionSurvey> = {
   // Parameters from the Planck 2018 survey - are these the right ones?
   planck2018: {
     h0: 67.66,
@@ -118,34 +126,82 @@ export interface LcdmModelParameters {
   rhoConst?: number;
 }
 
-export const create = (options: LcdmModelParameters): LcdmModel => {
-  // Constants derived from inputs
-  const survey = surveys[options.survey || 'planck2018'];
-  const {
-    kmsmpscToGyr,
-    h0,
-    omega0,
-    omegaLambda0,
-    zeq,
-    cmbTemperature,
-    gyrToSeconds,
+type CosmicExpansionModelOptions = {
+  survey?: string;
+};
 
-    rhoConst,
-  } = {
-    ...physicalConstants,
-    ...survey,
-    ...options,
-  };
+type CosmicExpansionModelProps = {
+  h0: number;
+  h0Gy: number;
+  omegaLambda0: number;
+  OmegaK0: number;
+  omegaM0: number;
+  omegaRad0: number;
+  rhoCrit0: number;
+  cmbTemperature: number;
 
-  const h0Gy = h0 * kmsmpscToGyr;
-  const seq = zeq + 1;
-  const h0Seconds = (h0 * kmsmpscToGyr) / gyrToSeconds;
+  rhoConst: number;
+  gyrToSeconds: number;
+  kmsmpscToGyr: number;
+};
 
-  // Calculate current density parameters.
-  const rhoCrit0 = rhoConst * h0Seconds * h0Seconds;
-  const omegaM0 = ((omega0 - omegaLambda0) * seq) / (seq + 1);
-  const omegaRad0 = omegaM0 / seq;
-  const OmegaK0 = 1 - omegaM0 - omegaRad0 - omegaLambda0;
+class CosmicExpansionModel {
+  props: CosmicExpansionModelProps;
+
+  getESquaredAtStretch: (s: number) => number;
+  getParamsAtStretch: (s: number) => LcdmModelVariables;
+
+  constructor(options: CosmicExpansionModelOptions) {
+    this.props = this.createProps(options);
+    this.getESquaredAtStretch = this.createESquaredAtStretchFunction();
+    // MUST create `this.getESquaredAtStretch` first.
+    this.getParamsAtStretch = this.createParamsAtStretchFunction();
+  }
+
+  createProps(options: CosmicExpansionModelOptions): CosmicExpansionModelProps {
+    // Constants derived from inputs
+    const survey = surveys[options.survey || 'planck2018'];
+    const props = {
+      ...physicalConstants,
+      ...survey,
+      ...options,
+    };
+
+    const {
+      kmsmpscToGyr,
+      h0,
+      omega0,
+      omegaLambda0,
+      zeq,
+
+      gyrToSeconds,
+      rhoConst,
+    } = {
+      ...physicalConstants,
+      ...survey,
+      ...options,
+    };
+
+    const h0Gy = h0 * kmsmpscToGyr;
+    const seq = zeq + 1;
+    const h0Seconds = (h0 * kmsmpscToGyr) / gyrToSeconds;
+
+    // Calculate current density parameters.
+    const rhoCrit0 = rhoConst * h0Seconds * h0Seconds;
+    const omegaM0 = ((omega0 - omegaLambda0) * seq) / (seq + 1);
+    const omegaRad0 = omegaM0 / seq;
+    const OmegaK0 = 1 - omegaM0 - omegaRad0 - omegaLambda0;
+
+    return {
+      h0Gy,
+      rhoCrit0,
+      omegaM0,
+      omegaRad0,
+      OmegaK0,
+
+      ...props,
+    };
+  }
 
   /**
    * Hubble constant as a function of stretch.
@@ -153,36 +209,49 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
    * @param s stretch = 1/a, where a is the usual FLRW scale factor.
    * @returns The Hubble constant at stretch s.
    */
-  const getESquaredAtStretch = (s: number) => {
-    const s2 = s * s;
-    return omegaLambda0 + OmegaK0 * s2 + omegaM0 * s2 * s + omegaRad0 * s2 * s2;
-  };
-
-  const getParamsAtStretch = (s: number): LcdmModelVariables => {
-    const eSquared = getESquaredAtStretch(s);
-    const s2 = s * s;
-    const h = h0 * Math.sqrt(eSquared);
-    const omegaM = (omegaM0 * s2 * s) / eSquared;
-    const omegaLambda = omegaLambda0 / eSquared;
-    const omegaRad = (omegaRad0 * s2 * s2) / eSquared;
-    return {
-      h,
-      omegaM,
-      omegaLambda,
-      omegaRad,
-      temperature: cmbTemperature * s,
-      rhoCrit: rhoCrit0 * eSquared,
+  createESquaredAtStretchFunction() {
+    const { omegaLambda0, OmegaK0, omegaM0, omegaRad0 } = this.props;
+    return (s: number) => {
+      const s2 = s * s;
+      return (
+        omegaLambda0 + OmegaK0 * s2 + omegaM0 * s2 * s + omegaRad0 * s2 * s2
+      );
     };
-  };
+  }
 
-  return {
-    cmbTemperature,
-    rhoConst,
-    gyrToSeconds,
-    kmsmpscToGyr,
-    h0,
-    h0Gy,
-    getESquaredAtStretch,
-    getParamsAtStretch,
-  };
+  createParamsAtStretchFunction() {
+    const { getESquaredAtStretch } = this;
+    const { h0, cmbTemperature, omegaLambda0, omegaM0, omegaRad0, rhoCrit0 } =
+      this.props;
+    return (s: number): LcdmModelVariables => {
+      const eSquared = getESquaredAtStretch(s);
+      const s2 = s * s;
+      const h = h0 * Math.sqrt(eSquared);
+      const omegaM = (omegaM0 * s2 * s) / eSquared;
+      const omegaLambda = omegaLambda0 / eSquared;
+      const omegaRad = (omegaRad0 * s2 * s2) / eSquared;
+      return {
+        h,
+        omegaM,
+        omegaLambda,
+        omegaRad,
+        temperature: cmbTemperature * s,
+        rhoCrit: rhoCrit0 * eSquared,
+      };
+    };
+  }
+
+  getIntegralFunctions() {
+    const { getESquaredAtStretch } = this;
+    return {
+      TH: (s: number): number => 1 / Math.sqrt(getESquaredAtStretch(s)),
+      THs: (s: number): number => 1 / (s * Math.sqrt(getESquaredAtStretch(s))),
+    };
+  }
+}
+
+export const create = (
+  options: CosmicExpansionModelOptions
+): CosmicExpansionModel => {
+  return new CosmicExpansionModel(options);
 };
