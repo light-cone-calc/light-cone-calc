@@ -46,19 +46,20 @@ describe('Performance vs legacy calculations', function () {
   it('should calculate expansion for the default inputs', function () {
     const legacyResults = legacy.Calculate(getLegacyInputs());
 
-    const inputs = convertLegacyInputs(getLegacyInputs());
+    const [modelInputs, expansionInputs] = convertLegacyInputs(
+      getLegacyInputs()
+    );
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    delete inputs.steps;
+    delete expansionInputs.steps;
 
-    const model = create(inputs);
+    const model = create(modelInputs);
 
     const results = model.calculateExpansion({
-      ...inputs,
+      ...expansionInputs,
       stretch,
     });
-    //   console.log(results[7], legacyResults[7]);
-
+    console.log(legacyResults[0]);
     const eps = Number.EPSILON;
     for (let i = 0; i < legacyResults.length; ++i) {
       const r = results[i];
@@ -89,8 +90,7 @@ describe('Performance vs legacy calculations', function () {
       expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
       expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
       expect(r.rhoCrit / leg.rhocrit).to.be.closeTo(1, 0.1 / 100);
-      const omegaTot = r.omegaM + r.omegaRad + r.omegaLambda;
-      expect(omegaTot / leg.OmegaTotalT).to.be.closeTo(1, 0.1 / 100);
+      expect(r.omega / leg.OmegaTotalT).to.be.closeTo(1, 0.1 / 100);
 
       if (i === 6) {
         expect(r.z).to.be.closeTo(leg.z, eps, `z: ${i}`);

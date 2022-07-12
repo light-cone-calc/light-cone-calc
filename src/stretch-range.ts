@@ -3,11 +3,11 @@
 /**
  * Compute stretch range.
  */
-type StretchInputs = {
+interface StretchInputs {
   exponentialSteps?: boolean;
   stretch: [upper: number, lower: number] | number[];
   steps?: number;
-};
+}
 
 /**
  * Add values to an existing array of steps, decreasing linearly.
@@ -66,7 +66,7 @@ const addStretchValues = (
  * @param inputs Sanitized inputs.
  * @returns Sanitized inputs.
  */
-const getStretchValues = (inputs: StretchInputs): number[] => {
+export const getStretchValues = (inputs: StretchInputs): number[] => {
   const { stretch, steps: stepCount, exponentialSteps } = inputs;
 
   // If there is no count we must have the values already.
@@ -108,5 +108,3 @@ const getStretchValues = (inputs: StretchInputs): number[] => {
   addLinearStretchValues(steps, 1, lower, countLower);
   return steps;
 };
-
-export { getStretchValues };

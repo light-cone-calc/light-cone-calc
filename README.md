@@ -2,9 +2,7 @@
 
 > A Javascript cosmological calculator for the expansion of the universe.
 
-See this running at https://light-cone-calc.github.io/
-
-[![Build](https://github.com/lightcone7/light-cone-calc/actions/workflows/node.js.yaml/badge.svg)](https://github.com/light-cone-calc/light-cone-calc/actions/workflows/node.js.yaml)
+This code is parked for the move to cosmic-expansion.
 
 ## Quick start
 

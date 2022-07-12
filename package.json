@@ -1,6 +1,6 @@
 {
   "name": "cosmic-expansion",
-  "version": "0.9.0-dev",
+  "version": "0.1.0-dev",
   "description": "Cosmological calculations for the expansion of the universe",
   "files": [
     "dist",

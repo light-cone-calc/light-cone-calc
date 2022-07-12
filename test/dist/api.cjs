@@ -1,1 +1,7 @@
-module.exports = ['calculateExpansion', 'version'];
+module.exports = [
+  'create',
+  'getStretchValues',
+  'physicalConstants',
+  'surveyParameters',
+  'version',
+];
