@@ -91,7 +91,7 @@ describe('Performance vs legacy calculations', function () {
       if (i === 6) {
         expect(r.z).to.be.closeTo(leg.z, eps, `z: ${i}`);
         expect(r.vNow).to.be.closeTo(leg.Vnow, 1e-12);
-        expect(r.vThen).to.be.closeTo(leg.Vthen, 1e-12);
+        expect(r.v).to.be.closeTo(leg.Vthen, 1e-12);
         expect(r.dNow).to.be.closeTo(leg.Dnow, 1e-12);
         expect(r.d).to.be.closeTo(leg.Dthen, 1e-12);
         continue;
@@ -99,7 +99,7 @@ describe('Performance vs legacy calculations', function () {
 
       expect(r.z / (leg.z + 0.001)).to.be.closeTo(1, Number.EPSILON);
       expect(r.vNow / leg.Vnow).to.be.closeTo(1, 0.2 / 100);
-      expect(r.vThen / leg.Vthen).to.be.closeTo(1, 0.2 / 100);
+      expect(r.v / leg.Vthen).to.be.closeTo(1, 0.2 / 100);
       expect(r.dNow / leg.Dnow).to.be.closeTo(1, 0.2 / 100);
       expect(r.d / leg.Dthen).to.be.closeTo(1, 0.2 / 100);
     }

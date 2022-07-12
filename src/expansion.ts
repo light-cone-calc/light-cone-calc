@@ -52,7 +52,7 @@ export type ExpansionResult = {
   /** Recession rate of a source observed at this redshift (c = 1). */
   vNow: number;
   /** Recession rate at this redshift when the light was emitted (c = 1). */
-  vThen: number;
+  v: number;
   /** @todo document this! */
   vGen: number;
 
@@ -175,9 +175,9 @@ const createExpansionResults = (
       d,
       r: 1 / hPerGyr,
       dPar: dPar,
-      vGen: (a * hPerGyr) / model.h0Gy,
+      vGen: (a * params.h) / model.h0,
       vNow: dNow * model.h0Gy,
-      vThen: d * hPerGyr,
+      v: d * hPerGyr,
       ...params,
     });
   }

@@ -43,7 +43,7 @@ describe('Fix to omegaM0 calculation in v1.8.2', function () {
       expect(current.dNow).to.equal(0);
       expect(current.d).to.equal(0);
       expect(current.vNow).to.equal(0);
-      expect(current.vThen).to.equal(0);
+      expect(current.v).to.equal(0);
     });
     expect(found).to.be.true;
   });
