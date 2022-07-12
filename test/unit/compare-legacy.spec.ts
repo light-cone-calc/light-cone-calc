@@ -68,6 +68,24 @@ describe('Performance vs legacy calculations', function () {
       expect(r.omegaRad / leg.OmegaRadiationT).to.be.closeTo(1, 0.1 / 100);
       expect(r.temperature / leg.TemperatureT).to.be.closeTo(1, 0.1 / 100);
       expect(r.t / leg.Tnow).to.be.closeTo(1, 0.1 / 100);
+      expect(r.rhoCrit / leg.rhocrit).to.be.closeTo(1, 0.1 / 100);
+      expect(r.r / leg.Dhor).to.be.closeTo(1, 0.1 / 100);
+      expect(leg.Y).to.equal(leg.Dhor);
+      expect(1 / r.r / leg.H_t).to.be.closeTo(1, 0.1 / 100);
+
+      // dPar inaccurate in LightCone7 due to integration method.
+      if (i < 2) {
+        expect(r.dPar / leg.Dpar).to.be.closeTo(1, 2 / 100);
+      } else if (i < 5) {
+        expect(r.dPar / leg.Dpar).to.be.closeTo(1, 0.5 / 100);
+      } else {
+        expect(r.dPar / leg.Dpar).to.be.closeTo(1, 0.1 / 100);
+      }
+
+      expect(r.vGen / leg.XDpar).to.be.closeTo(1, 0.1 / 100);
+
+      const omegaTot = r.omegaM + r.omegaRad + r.omegaLambda;
+      expect(omegaTot / leg.OmegaTotalT).to.be.closeTo(1, 0.1 / 100);
 
       if (i === 6) {
         expect(r.z).to.be.closeTo(leg.z, eps, `z: ${i}`);
@@ -83,14 +101,6 @@ describe('Performance vs legacy calculations', function () {
       expect(r.vThen / leg.Vthen).to.be.closeTo(1, 0.2 / 100);
       expect(r.d / leg.Dnow).to.be.closeTo(1, 0.2 / 100, `d: ${i}`);
       expect(r.dEmit / leg.Dthen).to.be.closeTo(1, 0.2 / 100, `dEmit: ${i}`);
-
-      // expect(r.Vnow / leg.Y).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.Dhor).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.XDpar).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.Dpar).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.H_t).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.rhocrit).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
-      // expect(r.Vnow / leg.OmegaTotalT).to.be.closeTo(1, 1e-5, `Vnow: ${i}`);
     }
   });
 });

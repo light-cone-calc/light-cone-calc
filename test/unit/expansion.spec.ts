@@ -23,7 +23,7 @@ describe('Expansion calculations', function () {
     expect(now.t).to.be.closeTo(t0, 0.0005);
     expect(now.d).to.equal(0);
     expect(now.dEmit).to.equal(0);
-    expect(now.XDpar).to.equal(1);
+    expect(now.vGen).to.equal(1);
     expect(now.vNow).to.equal(0);
     expect(now.vThen).to.equal(0);
 

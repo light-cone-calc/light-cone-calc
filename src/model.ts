@@ -139,8 +139,8 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
 
   const h0Gy = h0 * kmsmpscToGyr;
   const seq = zeq + 1;
-
-  // const rhocrit = rhoConst * (H0conv / secInGy) ** 2; // Critical density now
+  const h0Seconds = (h0 * kmsmpscToGyr) / gyrToSeconds;
+  const rhoCrit0 = rhoConst * h0Seconds * h0Seconds;
 
   const omegaM0 = ((omega - omegaLambda0) * seq) / (seq + 1); // Energy density of matter
   const omegaRad0 = omegaM0 / seq; // Energy density of radiation
@@ -165,8 +165,6 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
     const omegaM = (omegaM0 * s2 * s) / eSquared;
     const omegaLambda = omegaLambda0 / eSquared;
     const omegaRad = (omegaRad0 * s2 * s2) / eSquared;
-    const h0Squared =
-      (h0 * h0 * kmsmpscToGyr * kmsmpscToGyr) / (gyrToSeconds * gyrToSeconds);
     const h = h0 * Math.sqrt(eSquared);
     return {
       h,
@@ -174,7 +172,7 @@ export const create = (options: LcdmModelParameters): LcdmModel => {
       omegaLambda,
       omegaRad,
       temperature: cmbTemperature * s,
-      rhoCrit: rhoConst * h0Squared * omega,
+      rhoCrit: rhoCrit0 * eSquared,
     };
   };
 

@@ -21,7 +21,7 @@ type IntegrationResult = {
   s: number;
   t: number;
   d: number;
-  // dHor: number;
+  // r: number;
   dPar: number;
 };
 
@@ -46,9 +46,9 @@ export type ExpansionResult = {
   d: number;
   /** Proper distance at this redshift when the light was emitted \\( GYr \\). */
   dEmit: number;
-  Dhor: number;
-  XDpar: number;
-  Dpar: number;
+  r: number;
+  vGen: number;
+  dPar: number;
   /** Hubble parameter H in ## kms^{-1}Mpsc^{-1} ##. **/
   h: number;
   // @deprecate? hPerGyr: number; //H_t
@@ -172,10 +172,10 @@ const createExpansionResults = (
 
       ...params,
 
-      Dhor: 1 / hPerGyr,
-      Dpar: dPar,
-      // XDpar seems to be reported as Vgen.
-      XDpar: (a * hPerGyr) / model.h0Gy,
+      r: 1 / hPerGyr,
+      dPar: dPar,
+      // vGen seems to be reported as Vgen.
+      vGen: (a * hPerGyr) / model.h0Gy,
       vNow: d * model.h0Gy,
       vThen: dEmit * hPerGyr,
       // The legacy test says we don't want to convert.
