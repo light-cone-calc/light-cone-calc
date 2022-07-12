@@ -31,9 +31,7 @@ export const xlegacyConstants = {
  * @param inputs Raw inputs.
  * @returns Sanitized inputs.
  */
-export const convertLegacyInputs = (
-  inputs: LegacyExpansionInputs
-): ExpansionInputs => {
+export const convertLegacyInputs = (inputs: LegacyExpansionInputs) => {
   const { Ynow, s_eq, Omega, s_lower, s_upper, s_step, exponential } = inputs;
 
   const Yinf = Math.max(Ynow, inputs.Yinf);

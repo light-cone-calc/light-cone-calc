@@ -1,108 +1,20 @@
 // cosmic-expansion/src/model.ts
 
+import * as physicalConstants from './physical-constants.js';
+import * as surveyParameters from './survey-parameters.js';
+
 /**
  * H(s)^2 = H_0^2 (\Omega_m s^3 + \Omega_{rad} s^4 + \Omega_\Lambda s^{3(1+w)} + \Omega_k s^2 )
  */
-export type LcdmModel = {
-  /** Temperature of the cosmic microwave background radiation (K). */
-  cmbTemperature: number;
 
-  /** $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$ */
-  rhoConst: number;
-
-  /** Convert gigayears to seconds. */
-  gyrToSeconds: number;
-
-  /** Conversion factor for the Hubble parameter. */
-  kmsmpscToGyr: number;
-
-  h0: number;
-  h0Gy: number;
-  getESquaredAtStretch: (s: number) => number;
-  getParamsAtStretch: (s: number) => LcdmModelVariables;
-};
-
-type LcdmModelVariables = {
+interface CosmicExpansionVariables {
   h: number;
   omegaM: number;
   omegaLambda: number;
   omegaRad: number;
   temperature: number;
   rhoCrit: number;
-};
-
-export const physicalConstants = {
-  /**
-   * Temperature of the cosmic microwave background radiation (K).
-   *
-   * @todo Find reference.
-   */
-  cmbTemperature: 2.72548,
-
-  /**
-   * $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$
-   */
-  rhoConst: 1.7884453398696718e9,
-
-  /**
-   * Convert gigayears to seconds.
-   *
-   * Calculated as 1e9 years * 365.25 days * 86,400 s using a Julian Year.
-   *
-   * @see https://www.iau.org/public/themes/measuring/
-   */
-  gyrToSeconds: 3.15576e16, // 1e9 years * 365.25 days * 86400 s
-
-  /**
-   * Conversion factor for the Hubble parameter.
-   *
-   * Convert from \\( km.s^{-1}Mpsc^{-1} \\) to Gyr. Calculation:
-   *   - 1 parsec = \\( 648,000 / \pi \\) au.
-   *   - 1 au = 149,597,870,700 m.
-   *   - 1 Gyr = \\( 1e9 \times 365.25 \times 86,400 \\) s as above.
-   * $$ \frac{487,000 \pi }{1,495,978,707} \approx 1.022 712 165 045 694 937 $$
-   */
-  kmsmpscToGyr: 1.022712165045695e-3,
-};
-
-type CosmicExpansionSurvey = {
-  h0: number;
-  omegaLambda0: number;
-  zeq: number;
-  omega0: number;
-};
-
-/**
- * Parameters from the Planck 2018 survey.
- *
- * Planck 2018: https://arxiv.org/abs/1807.06209
- * @todo Check we have the right Planck 2018 parameters.
- * @todo Verify Planck 2015 parameters.
- * @todo Verify WMAP 2013 parameters.
- */
-const surveys: Record<string, CosmicExpansionSurvey> = {
-  // Parameters from the Planck 2018 survey - are these the right ones?
-  planck2018: {
-    h0: 67.66,
-    omegaLambda0: 0.6889,
-    zeq: 3387,
-    omega0: 1,
-  },
-  // Parameters from the Planck 2015 survey - unverified.
-  planck2015: {
-    h0: 67.74,
-    omegaLambda0: 0.691,
-    zeq: 3370,
-    omega0: 1,
-  },
-  // Parameters from the WMAP 2013 survey - unverified.
-  wmap2013: {
-    h0: 69.8,
-    omegaLambda0: 0.72,
-    zeq: 3300,
-    omega0: 1,
-  },
-};
+}
 
 /**
  * These parameters may be passed to `create()` to override default parameters.
@@ -116,21 +28,16 @@ export interface LcdmModelParameters {
   omegaLambda0?: number;
   /** Redshift when matter and radiation densities were equal \\( z_{eq} \\). */
   zeq?: number;
-  cmbTemperature?: number;
+  temperature0?: number;
   // Conversion: multiply (a hubble factor) km/s/Mpsc to get years * 10^9.
   kmsmpscToGyr?: number;
   // Conversion: multiply years * 10^9 to get seconds.
   gyrToSeconds?: number;
-  // The key of a survey to use for parameters (defaults to `planck2018`).
-  survey?: 'planck2018' | 'planck2015' | 'wmap2013';
+
   rhoConst?: number;
 }
 
-type CosmicExpansionModelOptions = {
-  survey?: string;
-};
-
-type CosmicExpansionModelProps = {
+interface CosmicExpansionModelProps {
   h0: number;
   h0Gy: number;
   omegaLambda0: number;
@@ -138,29 +45,42 @@ type CosmicExpansionModelProps = {
   omegaM0: number;
   omegaRad0: number;
   rhoCrit0: number;
-  cmbTemperature: number;
+  /** Temperature of the cosmic microwave background radiation (K). */
+  temperature0: number;
 
+  /** $$ \frac{3}{8 \pi G} \approx 1.788 445 339 869 671 753 \times 10^9 $$ */
   rhoConst: number;
+  /** Convert gigayears to seconds. */
   gyrToSeconds: number;
+  /** Conversion factor for the Hubble parameter. */
   kmsmpscToGyr: number;
-};
+}
+
+interface CosmicExpansionModelOptions {
+  // The key of a survey to use for parameters (defaults to `planck2018`).
+  survey?: 'planck2018' | 'planck2015' | 'wmap2013';
+  [key: string]: any;
+}
 
 class CosmicExpansionModel {
   props: CosmicExpansionModelProps;
 
   getESquaredAtStretch: (s: number) => number;
-  getParamsAtStretch: (s: number) => LcdmModelVariables;
+  getVariablesAtStretch: (s: number) => CosmicExpansionVariables;
 
   constructor(options: CosmicExpansionModelOptions) {
     this.props = this.createProps(options);
     this.getESquaredAtStretch = this.createESquaredAtStretchFunction();
     // MUST create `this.getESquaredAtStretch` first.
-    this.getParamsAtStretch = this.createParamsAtStretchFunction();
+    this.getVariablesAtStretch = this.createVariablesAtStretchFunction();
   }
 
   createProps(options: CosmicExpansionModelOptions): CosmicExpansionModelProps {
     // Constants derived from inputs
-    const survey = surveys[options.survey || 'planck2018'];
+    const survey =
+      options.survey && surveyParameters[options.survey]
+        ? surveyParameters[options.survey]
+        : surveyParameters['planck2018'];
     const props = {
       ...physicalConstants,
       ...survey,
@@ -176,11 +96,7 @@ class CosmicExpansionModel {
 
       gyrToSeconds,
       rhoConst,
-    } = {
-      ...physicalConstants,
-      ...survey,
-      ...options,
-    };
+    } = props;
 
     const h0Gy = h0 * kmsmpscToGyr;
     const seq = zeq + 1;
@@ -219,11 +135,11 @@ class CosmicExpansionModel {
     };
   }
 
-  createParamsAtStretchFunction() {
+  createVariablesAtStretchFunction() {
     const { getESquaredAtStretch } = this;
-    const { h0, cmbTemperature, omegaLambda0, omegaM0, omegaRad0, rhoCrit0 } =
+    const { h0, temperature0, omegaLambda0, omegaM0, omegaRad0, rhoCrit0 } =
       this.props;
-    return (s: number): LcdmModelVariables => {
+    return (s: number): CosmicExpansionVariables => {
       const eSquared = getESquaredAtStretch(s);
       const s2 = s * s;
       const h = h0 * Math.sqrt(eSquared);
@@ -235,7 +151,7 @@ class CosmicExpansionModel {
         omegaM,
         omegaLambda,
         omegaRad,
-        temperature: cmbTemperature * s,
+        temperature: temperature0 * s,
         rhoCrit: rhoCrit0 * eSquared,
       };
     };

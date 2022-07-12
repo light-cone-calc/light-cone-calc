@@ -47,6 +47,8 @@ describe('Performance vs legacy calculations', function () {
     const legacyResults = legacy.Calculate(getLegacyInputs());
 
     const inputs = convertLegacyInputs(getLegacyInputs());
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     delete inputs.steps;
 
     const results = calculateExpansion({

@@ -1,14 +1,14 @@
 // cosmic-expansion/src/expansion.ts
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import type { LcdmModelParameters } from './model';
 
 import { numerical } from '@rec-math/math';
 
 import { getStretchValues } from './stretch-range.js';
 import { create as createLcdmModel } from './model.js';
 
-export interface ExpansionInputs extends LcdmModelParameters {
+// export interface ExpansionInputs extends LcdmModelParameters {
+export interface ExpansionInputs {
   /** Upper and lower bounds for stretch, or an array of values. */
   stretch: [upper: number, lower: number] | number[];
   /** The number of steps to take between the upper and lower stretch bounds. */
@@ -150,7 +150,7 @@ const createExpansionResults = (
   for (let i = integrationResults.length - 1; i >= 0; --i) {
     const { s, t, dNow: dUnsafe, dPar } = integrationResults[i];
 
-    const params = model.getParamsAtStretch(s);
+    const params = model.getVariablesAtStretch(s);
     const hGy = params.h * kmsmpscToGyr;
 
     // Force dNow to zero at zero redshift.
