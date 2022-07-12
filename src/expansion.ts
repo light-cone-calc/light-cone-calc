@@ -41,7 +41,6 @@ export type ExpansionResult = {
   vThen: number;
   /** Time since the end of inflation \\( GYr \\). */
   t: number;
-  Y: number;
   /** Proper distance of a source observed at this redshift \\( GYr \\). */
   d: number;
   /** Proper distance at this redshift when the light was emitted \\( GYr \\). */
@@ -65,8 +64,7 @@ export type ExpansionResult = {
 
 const getFunctionsFromModel = (model: LcdmModel) => {
   return {
-    TH: (s: number): number =>
-      1 / (model.h0Gy * Math.sqrt(model.getESquaredAtStretch(s))),
+    TH: (s: number): number => 1 / Math.sqrt(model.getESquaredAtStretch(s)),
     THs: (s: number): number =>
       1 / (s * model.h0Gy * Math.sqrt(model.getESquaredAtStretch(s))),
   };
@@ -133,8 +131,8 @@ const calculateExpansionForStretchValues = (
     results.push({
       s,
       t: thsAtInfinity - ths,
-      d: Math.abs(th - thAtOne),
-      dPar: (thAtInfinity - th) / s,
+      d: Math.abs(th - thAtOne) / model.h0Gy,
+      dPar: (thAtInfinity - th) / s / model.h0Gy,
     });
   }
 
@@ -169,18 +167,12 @@ const createExpansionResults = (
       t,
       d,
       dEmit,
-
-      ...params,
-
       r: 1 / hPerGyr,
       dPar: dPar,
-      // vGen seems to be reported as Vgen.
       vGen: (a * hPerGyr) / model.h0Gy,
       vNow: d * model.h0Gy,
       vThen: dEmit * hPerGyr,
-      // The legacy test says we don't want to convert.
-      // H_t: H_t / model.convertToGyr,
-      Y: 1 / hPerGyr,
+      ...params,
     });
   }
 
