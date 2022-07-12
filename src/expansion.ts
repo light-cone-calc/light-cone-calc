@@ -157,27 +157,23 @@ const createExpansionResults = (
     const { s, t, dNow: dUnsafe, dPar } = integrationResults[i];
 
     const params = model.getParamsAtStretch(s);
-    const hPerGyr = params.h * model.kmsmpscToGyr;
+    const hGy = params.h * model.kmsmpscToGyr;
 
-    const z = s - 1;
     // Force dNow to zero at zero redshift.
-    const dNow = z === 0 ? 0 : dUnsafe;
-    // Current radius = ## \integral_0^s TH(s) ##.
-    const d = dNow / s;
-    const a = 1 / s;
+    const dNow = s === 1 ? 0 : dUnsafe;
 
     results.push({
-      z,
-      a,
+      z: s - 1,
+      a: 1 / s,
       s,
       t,
       dNow,
-      d,
-      r: 1 / hPerGyr,
-      dPar: dPar,
-      vGen: (a * params.h) / model.h0,
+      d: dNow / s,
+      r: 1 / hGy,
+      dPar,
+      vGen: params.h / (s * model.h0),
       vNow: dNow * model.h0Gy,
-      v: d * hPerGyr,
+      v: (dNow * hGy) / s,
       ...params,
     });
   }
