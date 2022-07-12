@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { calculateExpansion } from '../../src/expansion';
+import { create } from '../../src/model.js';
 
 describe('Expansion calculations', function () {
   it('should calculate expansion for the default inputs (Planck 2018)', function () {
@@ -11,7 +11,7 @@ describe('Expansion calculations', function () {
     // Radius at separation.
     // const rstar = (144.57 * 3.26156) / 1000;
 
-    const [atSeparation, now] = calculateExpansion({
+    const [atSeparation, now] = create().calculateExpansion({
       // ## z_* ##, the redshift at photon separationfrom Planck 2018 is 1089.8
       stretch: [1 + zstar, 1],
     });
@@ -38,7 +38,7 @@ describe('Expansion calculations', function () {
   });
 
   it('should calculate expansion for values close to s = 1', function () {
-    const results = calculateExpansion({
+    const results = create().calculateExpansion({
       stretch: [
         1.1, 1.09, 1.08, 1.07, 1.06, 1.05, 1.04, 1.03, 1.02, 1.01, 1, 0.99,
         0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92, 0.91, 0.9,

@@ -4,11 +4,7 @@
 
 import type { ExpansionInputs } from '../src/expansion';
 
-import {
-  calculateAge,
-  calculateExpansion,
-  convertResultUnits,
-} from '../src/expansion';
+import { create } from '../src/model.js';
 
 type LegacyExpansionInputs = {
   Ynow: number;
@@ -54,7 +50,7 @@ export const convertLegacyInputs = (inputs: LegacyExpansionInputs) => {
 
 export const Calculate = (inputs: LegacyExpansionInputs) => {
   const converted = convertLegacyInputs(inputs);
-  return calculateExpansion(converted);
+  return create(converted).calculateExpansion(converted);
 };
 
 // This uses a bit of a hack to calculate the current age of the universe:
@@ -62,7 +58,7 @@ export const Calculate = (inputs: LegacyExpansionInputs) => {
 // redundant.
 export const CalculateTage = (inputs: LegacyExpansionInputs) => {
   const converted = convertLegacyInputs(inputs);
-  return calculateAge(converted);
+  return create(converted).calculateAge();
 };
 
-export const ScaleResults = convertResultUnits;
+// export const ScaleResults = convertResultUnits;

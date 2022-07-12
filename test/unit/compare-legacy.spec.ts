@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
+import { create } from '../../src/model.js';
+
 import { convertLegacyInputs, CalculateTage } from '../legacy.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as legacy from '../legacy-calculation.js';
-
-import { calculateExpansion } from '../../src/expansion.js';
 
 const getLegacyInputs = () => {
   const H_0 = 67.74;
@@ -51,7 +51,9 @@ describe('Performance vs legacy calculations', function () {
     // @ts-ignore
     delete inputs.steps;
 
-    const results = calculateExpansion({
+    const model = create(inputs);
+
+    const results = model.calculateExpansion({
       ...inputs,
       stretch,
     });

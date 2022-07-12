@@ -1,7 +1,15 @@
 // cosmic-expansion/src/model.ts
+import { numerical } from '@rec-math/math';
 
 import * as physicalConstants from './physical-constants.js';
+import { getStretchValues } from './stretch-range.js';
 import * as surveyParameters from './survey-parameters.js';
+
+import type {
+  ExpansionInputs,
+  ExpansionResult,
+  IntegrationResult,
+} from './expansion.js';
 
 /**
  * H(s)^2 = H_0^2 (\Omega_m s^3 + \Omega_{rad} s^4 + \Omega_\Lambda s^{3(1+w)} + \Omega_k s^2 )
@@ -164,10 +172,148 @@ class CosmicExpansionModel {
       THs: (s: number): number => 1 / (s * Math.sqrt(getESquaredAtStretch(s))),
     };
   }
+
+  /**
+   * Get a list of cosmic expansion results for a range of stretch values.
+   *
+   * @param redshiftValues
+   * @param inputs
+   * @returns
+   */
+  calculateExpansionForStretchValues(
+    stretchValues: number[]
+  ): IntegrationResult[] {
+    // Convert stretch values in descending order into integration points in
+    // ascending order.
+    const infty = Number.POSITIVE_INFINITY;
+    const sPoints = stretchValues.slice().reverse();
+    const isInfinityIncluded = sPoints[sPoints.length - 1] === infty;
+
+    if (!isInfinityIncluded) {
+      sPoints.push(infty);
+    }
+
+    // We assume zero is not included.
+    sPoints.unshift(0);
+
+    const { TH, THs } = this.getIntegralFunctions();
+
+    const options = { epsilon: 1e-8 };
+
+    const thResults = numerical.quad(TH, sPoints, options);
+    const thPoints = thResults[1].points || [thResults];
+
+    // Make sure we don't calculate THs at s = 0: discontinuity!
+    const thsResults = numerical.quad(THs, sPoints.slice(1), options);
+    // We may only have one point so this fix is needed.
+    const thsPoints = thsResults[1].points || [thsResults];
+
+    // Put in the initial value.
+    thsPoints.unshift([0, { steps: 0, errorEstimate: 0, depth: 0 }]);
+
+    const thAtOne = numerical.quad(TH, [0, 1], options)[0];
+    const thAtInfinity = thResults[0];
+    const thsAtInfinity = thsResults[0];
+
+    // Create an array to build the return values.
+    const results: IntegrationResult[] = [];
+
+    // Discard the initial zero start point.
+    sPoints.shift();
+    const { h0Gy } = this.props;
+
+    let th = 0;
+    let ths = 0;
+    for (let i = 0; i < sPoints.length - (isInfinityIncluded ? 0 : 1); ++i) {
+      th += thPoints[i][0];
+      ths += thsPoints[i][0];
+      const s = sPoints[i];
+
+      results.push({
+        s,
+        t: (thsAtInfinity - ths) / h0Gy,
+        dNow: Math.abs(th - thAtOne) / h0Gy,
+        dPar: (thAtInfinity - th) / s / h0Gy,
+      });
+    }
+
+    return results;
+  }
+
+  createExpansionResults(
+    integrationResults: IntegrationResult[]
+  ): ExpansionResult[] {
+    const { h0, h0Gy, kmsmpscToGyr } = this.props;
+
+    const results: ExpansionResult[] = [];
+
+    for (let i = integrationResults.length - 1; i >= 0; --i) {
+      const { s, t, dNow: dUnsafe, dPar } = integrationResults[i];
+
+      const params = this.getVariablesAtStretch(s);
+      const hGy = params.h * kmsmpscToGyr;
+
+      // Force dNow to zero at zero redshift.
+      const dNow = s === 1 ? 0 : dUnsafe;
+      results.push({
+        z: s - 1,
+        a: 1 / s,
+        s,
+        t,
+        dNow,
+        d: dNow / s,
+        r: 1 / hGy,
+        dPar,
+        vGen: params.h / (s * h0),
+        vNow: dNow * h0Gy,
+        v: (dNow * hGy) / s,
+        ...params,
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * Calculate the current age of the universe.
+   *
+   * @param inputs Inputs.
+   * @returns
+   */
+  calculateAge(): number {
+    // Do the integration.
+    const { t } = this.calculateExpansionForStretchValues([1])[0];
+    return t;
+  }
+
+  /**
+   * Get a list of cosmic expansion results.
+   *
+   * @param inputs Inputs.
+   * @returns
+   */
+  calculateExpansion(inputs: ExpansionInputs): ExpansionResult[] {
+    // Calculate the values to calculate at.
+    const stretchValues =
+      inputs.stretch.length === 1
+        ? // Pass the single point to calculate at.
+          inputs.stretch
+        : // Calculate multiple points.
+          getStretchValues(inputs);
+
+    // Do the integration.
+    const integrationResults =
+      this.calculateExpansionForStretchValues(stretchValues);
+
+    // Create the tabulated results.
+    const results = this.createExpansionResults(integrationResults);
+
+    return results;
+  }
 }
 
 export const create = (
-  options: CosmicExpansionModelOptions
+  options: CosmicExpansionModelOptions = {}
 ): CosmicExpansionModel => {
   return new CosmicExpansionModel(options);
 };
